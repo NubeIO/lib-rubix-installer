@@ -1,4 +1,4 @@
-module NubeIO/lib-rubix-installer
+module github.com/NubeIO/lib-rubix-installer
 
 go 1.18
 
