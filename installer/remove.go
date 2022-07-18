@@ -30,7 +30,7 @@ type RemoveRes struct {
 func (inst *App) UninstallService(appName, appBuildName, service string) (*RemoveRes, error) {
 	ser := ctl.New(service, "")
 	ser.InstallOpts = ctl.InstallOpts{
-		Options: systemctl.Options{Timeout: DefaultTimeout},
+		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
 	}
 	remove, _ := ser.Remove()
 	resp := &RemoveRes{

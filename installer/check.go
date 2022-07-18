@@ -22,12 +22,12 @@ type AppResponse struct {
 
 var systemOpts = systemctl.Options{
 	UserMode: false,
-	Timeout:  DefaultTimeout,
+	Timeout:  defaultTimeout,
 }
 
 func (inst *App) ConfirmAppInstalled(appName, serviceName string) *AppResponse {
 	hasDir := inst.ConfirmAppDir(appName)
-	installed, _ := inst.IsInstalled(serviceName, DefaultTimeout)
+	installed, _ := inst.IsInstalled(serviceName, inst.DefaultTimeout)
 	var isAService bool
 	if installed != nil {
 		isAService = installed.Is
@@ -41,19 +41,19 @@ func (inst *App) ConfirmAppInstalled(appName, serviceName string) *AppResponse {
 }
 
 func (inst *App) ConfirmAppDir(appName string) bool {
-	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", DataDir, appName))
+	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.DataDir, appName))
 }
 
 func (inst *App) ConfirmAppInstallDir(appInstallName string) bool {
-	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", AppsInstallDir, appInstallName))
+	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appInstallName))
 }
 
 func (inst *App) ConfirmServiceFile(serviceName string) bool {
-	return fileutils.New().FileExists(fmt.Sprintf("%s/%s", LibSystemPath, serviceName))
+	return fileutils.New().FileExists(fmt.Sprintf("%s/%s", inst.LibSystemPath, serviceName))
 }
 
 func (inst *App) GetAppVersion(appInstallName string) string {
-	file := fmt.Sprintf("%s/%s", AppsInstallDir, appInstallName)
+	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appInstallName)
 	fileInfo, err := os.Stat(file)
 	if err != nil {
 		return ""
@@ -90,8 +90,35 @@ func (inst *App) listFiles(file string) ([]string, error) {
 	return dirContent, nil
 }
 
+func (inst *App) DiscoverStoreInstalled() ([]AppResponse, error) {
+	rootDir := inst.StoreDir
+	var files []AppResponse
+	app := AppResponse{}
+	err := filepath.WalkDir(rootDir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() && strings.Count(p, string(os.PathSeparator)) == 5 {
+			parts := strings.Split(p, "/")
+			if len(parts) >= 4 { // app name
+				app.Name = parts[4]
+			}
+			if len(parts) >= 5 { // version
+				app.Version = parts[5]
+			}
+			app.AppStatus = nil
+			files = append(files, app)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
 func (inst *App) DiscoverInstalled() ([]AppResponse, error) {
-	rootDir := AppsInstallDir
+	rootDir := inst.AppsInstallDir
 	var files []AppResponse
 	app := AppResponse{}
 	err := filepath.WalkDir(rootDir, func(p string, d fs.DirEntry, err error) error {

@@ -59,7 +59,7 @@ func (inst *App) MakeTmpDir() error {
 	if err := checkDir(inst.DataDir); err != nil {
 		return errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
 	}
-	return makeDirectoryIfNotExists(TmpDir, os.FileMode(FilePerm))
+	return makeDirectoryIfNotExists(inst.TmpDir, os.FileMode(inst.FilePerm))
 }
 
 //MakeTmpDirUpload  => /data/tmp
@@ -67,22 +67,26 @@ func (inst *App) MakeTmpDirUpload() (string, error) {
 	if err := checkDir(inst.DataDir); err != nil {
 		return "", errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
 	}
-	tmpDir := fmt.Sprintf("%s/%s", TmpDir, uuid.ShortUUID("tmp"))
-	err := makeDirectoryIfNotExists(tmpDir, os.FileMode(FilePerm))
+	tmpDir := fmt.Sprintf("%s/%s", inst.TmpDir, uuid.ShortUUID("tmp"))
+	err := makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FilePerm))
 	return tmpDir, err
 }
 
 //MakeAppInstallDir  => /data/rubix-service/apps/install/wires-builds
-func (inst *App) MakeAppInstallDir(appBuildName string) error {
+func (inst *App) MakeAppInstallDir(appBuildName string, removeExisting ...bool) error {
 	if err := emptyPath(appBuildName); err != nil {
 		return err
 	}
-	appInstallDir := fmt.Sprintf("%s/%s", AppsInstallDir, appBuildName)
-	err := inst.RmRF(appInstallDir)
-	if err != nil {
-		log.Errorf("delete existing install dir: %s", err.Error())
+	appInstallDir := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appBuildName)
+	if len(removeExisting) > 0 {
+		if removeExisting[0] {
+			err := inst.RmRF(appInstallDir)
+			if err != nil {
+				log.Errorf("delete existing install dir: %s", err.Error())
+			}
+		}
 	}
-	return makeDirectoryIfNotExists(fmt.Sprintf("%s/%s", AppsInstallDir, appBuildName), os.FileMode(FilePerm))
+	return makeDirectoryIfNotExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appBuildName), os.FileMode(inst.FilePerm))
 }
 
 //MakeAppVersionDir  => /data/rubix-service/apps/install/wires-builds/v0.0.1
@@ -93,8 +97,8 @@ func (inst *App) MakeAppVersionDir(appBuildName, version string) error {
 	if err := checkVersion(version); err != nil {
 		return err
 	}
-	appDir := fmt.Sprintf("%s/%s/%s", AppsInstallDir, appBuildName, version)
-	return makeDirectoryIfNotExists(appDir, os.FileMode(FilePerm))
+	appDir := fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appBuildName, version)
+	return makeDirectoryIfNotExists(appDir, os.FileMode(inst.FilePerm))
 }
 
 //MakeAppDir  => /data/flow-framework
@@ -105,36 +109,48 @@ func (inst *App) MakeAppDir(appName string) error {
 	if err := checkDir(inst.DataDir); err != nil {
 		return errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
 	}
-	return makeDirectoryIfNotExists(fmt.Sprintf("%s/%s", inst.DataDir, appName), os.FileMode(FilePerm))
+	return makeDirectoryIfNotExists(fmt.Sprintf("%s/%s", inst.DataDir, appName), os.FileMode(inst.FilePerm))
 }
 
 //MakeInstallDir  => /data/rubix-service/install
 func (inst *App) MakeInstallDir() error {
-	if AppsInstallDir == "" {
+	if inst.AppsInstallDir == "" {
 		return errors.New("path can not be empty")
 	}
-	return mkdirAll(AppsInstallDir, os.FileMode(FilePerm))
+	return mkdirAll(inst.AppsInstallDir, os.FileMode(inst.FilePerm))
 }
 
-//MakeDownloadDir  => /data/rubix-service/download
+//MakeDownloadDir  => /user/home/download
 func (inst *App) MakeDownloadDir() error {
-	if AppsInstallDir == "" {
+	if inst.AppsInstallDir == "" {
 		return errors.New("path can not be empty")
 	}
-	return mkdirAll(AppsDownloadDir, os.FileMode(FilePerm))
+	return mkdirAll(inst.AppsDownloadDir, os.FileMode(inst.FilePerm))
 }
 
 //MakeDataDir  => /data
 func (inst *App) MakeDataDir() error {
 	if inst.DataDir == "" {
-		return errors.New("path can not be empty")
+		return errors.New("/data path can not be empty")
 	}
-	return makeDirectoryIfNotExists(inst.DataDir, os.FileMode(FilePerm))
+	fmt.Println(1111, inst.DataDir)
+	return makeDirectoryIfNotExists(inst.DataDir, os.FileMode(inst.FilePerm))
+}
+
+//MakeDirectoryIfNotExists make dir
+func (inst *App) MakeDirectoryIfNotExists(path string, perm os.FileMode) error {
+	return makeDirectoryIfNotExists(path, perm)
+}
+
+//MkdirAll make dir
+func (inst *App) MkdirAll(path string, perm os.FileMode) error {
+	return mkdirAll(path, perm)
 }
 
 // mkdirAll all dirs
 func mkdirAll(path string, perm os.FileMode) error {
-	return mkdirAll(path, perm)
+	path = filePath(path)
+	return os.MkdirAll(path, perm)
 }
 
 // makeDirectoryIfNotExists if not exist make dir

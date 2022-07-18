@@ -10,7 +10,7 @@ func TestApp_uploadApp(t *testing.T) {
 	//var err error
 	homeDir, _ := fileutils.Dir()
 	fmt.Println(homeDir)
-	app := New(&App{DataDir: "/data", Perm: nonRoot, HostDownloadPath: fmt.Sprintf("%s/Downloads", homeDir)})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, HostDownloadPath: fmt.Sprintf("%s/Downloads", homeDir)})
 
 	appName := "rubix-wires"
 	appInstallName := "wires-builds"

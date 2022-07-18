@@ -45,7 +45,7 @@ func (inst *App) installService(service, tmpServiceFile string) (*InstallResp, e
 	var err error
 	ser := ctl.New(service, tmpServiceFile)
 	ser.InstallOpts = ctl.InstallOpts{
-		Options: systemctl.Options{Timeout: DefaultTimeout},
+		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
 	}
 	err = ser.TransferFile()
 	if err != nil {

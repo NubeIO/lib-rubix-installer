@@ -20,15 +20,20 @@ func filePath(path string, debug ...bool) string {
 
 // GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
 func (inst *App) getAppPath(appName string) string {
-	return filePath(fmt.Sprintf("%s/%s", DataDir, appName))
+	return filePath(fmt.Sprintf("%s/%s", inst.DataDir, appName))
 }
 
 // GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
 func (inst *App) getAppInstallPath(appBuildName string) string {
-	return filePath(fmt.Sprintf("%s/%s", AppsInstallDir, appBuildName))
+	return filePath(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appBuildName))
+}
+
+// GetStoreDir get store dir
+func (inst *App) GetStoreDir() string {
+	return filePath(inst.StoreDir)
 }
 
 // GetAppInstallPathAndVersion get the full app install path and version => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) getAppInstallPathAndVersion(appBuildName, version string) string {
-	return filePath(fmt.Sprintf("%s/%s/%s", AppsInstallDir, appBuildName, version))
+	return filePath(fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appBuildName, version))
 }
