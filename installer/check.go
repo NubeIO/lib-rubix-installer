@@ -48,6 +48,26 @@ func (inst *App) ConfirmAppInstallDir(appInstallName string) bool {
 	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appInstallName))
 }
 
+func (inst *App) DirExists(dir string) bool {
+	return fileutils.New().DirExists(dir)
+}
+
+func (inst *App) FileExists(dir string) bool {
+	return fileutils.New().FileExists(dir)
+}
+
+func (inst *App) ConfirmStoreDir() bool {
+	return fileutils.New().DirExists(inst.GetStoreDir())
+}
+
+func (inst *App) ConfirmStoreAppDir(appName string) bool {
+	return fileutils.New().DirExists(fmt.Sprintf("%s/apps/%s", inst.GetStoreDir(), appName))
+}
+
+func (inst *App) ConfirmStoreAppVersionDir(appName, version string) bool {
+	return fileutils.New().DirExists(fmt.Sprintf("%s/apps/%s/%s", inst.GetStoreDir(), appName, version))
+}
+
 func (inst *App) ConfirmServiceFile(serviceName string) bool {
 	return fileutils.New().FileExists(fmt.Sprintf("%s/%s", inst.LibSystemPath, serviceName))
 }
@@ -88,33 +108,6 @@ func (inst *App) listFiles(file string) ([]string, error) {
 		}
 	}
 	return dirContent, nil
-}
-
-func (inst *App) DiscoverStoreInstalled() ([]AppResponse, error) {
-	rootDir := inst.StoreDir
-	var files []AppResponse
-	app := AppResponse{}
-	err := filepath.WalkDir(rootDir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() && strings.Count(p, string(os.PathSeparator)) == 5 {
-			parts := strings.Split(p, "/")
-			if len(parts) >= 4 { // app name
-				app.Name = parts[4]
-			}
-			if len(parts) >= 5 { // version
-				app.Version = parts[5]
-			}
-			app.AppStatus = nil
-			files = append(files, app)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return files, nil
 }
 
 func (inst *App) DiscoverInstalled() ([]AppResponse, error) {

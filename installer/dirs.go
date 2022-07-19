@@ -115,7 +115,7 @@ func (inst *App) MakeAppDir(appName string) error {
 //MakeInstallDir  => /data/rubix-service/install
 func (inst *App) MakeInstallDir() error {
 	if inst.AppsInstallDir == "" {
-		return errors.New("path can not be empty")
+		return errors.New("MakeDataDir path can not be empty")
 	}
 	return mkdirAll(inst.AppsInstallDir, os.FileMode(inst.FilePerm))
 }
@@ -123,7 +123,7 @@ func (inst *App) MakeInstallDir() error {
 //MakeDownloadDir  => /user/home/download
 func (inst *App) MakeDownloadDir() error {
 	if inst.AppsInstallDir == "" {
-		return errors.New("path can not be empty")
+		return errors.New("MakeDownloadDir path can not be empty")
 	}
 	return mkdirAll(inst.AppsDownloadDir, os.FileMode(inst.FilePerm))
 }
@@ -133,12 +133,12 @@ func (inst *App) MakeDataDir() error {
 	if inst.DataDir == "" {
 		return errors.New("/data path can not be empty")
 	}
-	fmt.Println(1111, inst.DataDir)
 	return makeDirectoryIfNotExists(inst.DataDir, os.FileMode(inst.FilePerm))
 }
 
 //MakeDirectoryIfNotExists make dir
 func (inst *App) MakeDirectoryIfNotExists(path string, perm os.FileMode) error {
+
 	return makeDirectoryIfNotExists(path, perm)
 }
 
@@ -150,7 +150,12 @@ func (inst *App) MkdirAll(path string, perm os.FileMode) error {
 // mkdirAll all dirs
 func mkdirAll(path string, perm os.FileMode) error {
 	path = filePath(path)
-	return os.MkdirAll(path, perm)
+	err := os.MkdirAll(path, perm)
+	if err != nil {
+		return errors.New(fmt.Sprintf("path %s, err:%s", path, err.Error()))
+	}
+	return nil
+
 }
 
 // makeDirectoryIfNotExists if not exist make dir

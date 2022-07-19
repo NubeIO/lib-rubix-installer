@@ -11,19 +11,11 @@ const root = 0777
 var filePerm = root
 var defaultTimeout = 30
 
-//var DataDir = "/data"
-//var TmpDir = ""
-//var AppsInstallDir = ""
-//var StoreDir = ""
-//var UserRubixHome = ""
-//var AppBuildName = ""
-//var HostDownloadPath = ""
-//var AppsDownloadDir = ""
 var libSystemPath = "/lib/systemd"
 var etcSystemPath = "/etc/systemd"
 
 type App struct {
-	Name             string `json:"app"`                // rubix-wires
+	Name             string `json:"name"`               // rubix-wires
 	AppBuildName     string `json:"app_build_name"`     // wires-builds
 	Version          string `json:"version"`            // v1.1.1
 	DataDir          string `json:"data_dir"`           // /data
@@ -76,6 +68,8 @@ func New(app *App) *App {
 	if app.AppsDownloadDir == "" {
 		app.AppsDownloadDir = filePath(fmt.Sprintf("%s/rubix-service/apps/download", app.DataDir))
 	}
-
+	if app.TmpDir == "" {
+		app.TmpDir = "/data/tmp"
+	}
 	return app
 }
