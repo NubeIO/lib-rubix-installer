@@ -3,9 +3,11 @@ module github.com/NubeIO/lib-rubix-installer
 go 1.17
 
 require (
+	github.com/NubeIO/lib-command v0.0.2
 	github.com/NubeIO/lib-dirs v0.0.2
 	github.com/NubeIO/lib-systemctl-go v0.0.5
 	github.com/NubeIO/lib-uuid v0.0.2
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 )
 

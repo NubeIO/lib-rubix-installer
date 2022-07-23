@@ -1,3 +1,6 @@
+github.com/NubeIO/lib-command v0.0.2 h1:jTg8YRSffIBsPAbU9X1Dn+L4bQ8e7PY2p7zJEcrTjrY=
+github.com/NubeIO/lib-command v0.0.2/go.mod h1:Qjl490ti7E47AhftOOvUfhAsM6NhZpBAeZlNfmy6Cd0=
+github.com/NubeIO/lib-dirs v0.0.1/go.mod h1:PCDWQm82Nezp9oyhkpqyfVH6w6+1lzfDwfRdYVF5sPY=
 github.com/NubeIO/lib-dirs v0.0.2 h1:8mdDMNpNgmcyXBSllyNdeN/5bgCJ7LssaRqg8N2YVC4=
 github.com/NubeIO/lib-dirs v0.0.2/go.mod h1:PCDWQm82Nezp9oyhkpqyfVH6w6+1lzfDwfRdYVF5sPY=
 github.com/NubeIO/lib-systemctl-go v0.0.5 h1:Bh0ibU56WR/Em+39J4ygQ7KQEqT2+kSkml4WcHl0hv8=
@@ -8,6 +11,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
