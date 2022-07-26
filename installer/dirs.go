@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"os"
 	"strings"
 )
@@ -13,19 +14,32 @@ import (
 //	appDirName => rubix-wires
 //	appInstallName => wires-builds
 func (inst *App) DirsInstallApp(appName, appBuildName, version string) error {
+	if appName == "" {
+		return errors.New("app name can not be empty")
+	}
+	if appBuildName == "" {
+		return errors.New("app build name can not be empty")
+	}
+	if version == "" {
+		return errors.New("app version can not be empty")
+	}
 	err := inst.MakeAllDirs()
+	log.Info("install app edge: MakeAllDirs")
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppDir(appName)
+	log.Infof("install app edge: MakeAppDir app:%s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppInstallDir(appBuildName)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s", appBuildName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppVersionDir(appBuildName, version)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s version:%s", appBuildName, version)
 	if err != nil {
 		return err
 	}
@@ -216,6 +230,32 @@ func checkVersion(version string) error {
 	if len(p) >= 2 && len(p) < 4 {
 	} else {
 		return errors.New(fmt.Sprintf("incorrect lenght provided:%s version number try: v1.2.3", version))
+	}
+	return nil
+}
+
+func (inst *App) MoveFile(sourcePath, destPath string, deleteAfter bool) error {
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("couldn't open source file: %s", err)
+	}
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("couldn't open dest file: %s", err)
+	}
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("writing to output file failed: %s", err)
+	}
+	// The copy was successful, so now delete the original file
+	if deleteAfter {
+		err = os.Remove(sourcePath)
+		if err != nil {
+			return fmt.Errorf("failed removing original file: %s", err)
+		}
 	}
 	return nil
 }

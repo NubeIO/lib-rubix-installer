@@ -29,7 +29,6 @@ func (inst *App) BuildCheck(appName, version, path string) (*MatchBuild, error) 
 	for _, detail := range details {
 		if detail.Extension == ".zip" {
 			fileName := detail.Name
-
 			if strings.Contains(fileName, appName) {
 				checks.MatchNamePartly = true
 			}
@@ -54,7 +53,6 @@ func (inst *App) BuildCheck(appName, version, path string) (*MatchBuild, error) 
 				checks.MatchVersionPartly = true
 				checks.MatchVersion = true
 			}
-
 			checks.BuildZipName = fileName
 			checks.Arch = arch
 		}

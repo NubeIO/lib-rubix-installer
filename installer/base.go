@@ -21,7 +21,7 @@ type App struct {
 	DataDir          string `json:"data_dir"`           // /data
 	HostDownloadPath string `json:"host_download_path"` // home/user/downloads
 	StoreDir         string `json:"store_dir"`
-	TmpDir           string `json:"store_dir"`
+	TmpDir           string `json:"tmp_dir"`
 	UserRubixHome    string `json:"user_rubix_home"`
 	FilePerm         int    `json:"file_perm"`       // file permissions
 	ServiceName      string `json:"service_name"`    // nubeio-rubix-wires

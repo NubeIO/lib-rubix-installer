@@ -10,14 +10,21 @@ import (
 	"time"
 )
 
+func (inst *App) setServiceFileName(appName string) string {
+	return fmt.Sprintf("nubeio-%s.service", appName)
+}
+
 func (inst *App) InstallService(app *Install) (*InstallResp, error) {
-	var serviceName = app.ServiceName
-	var serviceFilePath = app.Source
-	if serviceName == "" {
-		return nil, errors.New("service name can not be empty")
+	var serviceName = inst.setServiceFileName(app.Name)
+	if app.ServiceName != "" {
+		serviceName = app.ServiceName
 	}
+	if serviceName == "" {
+		return nil, errors.New("service name can not be empty, nubeio-flow-framework.service")
+	}
+	var serviceFilePath = app.Source
 	if serviceFilePath == "" {
-		return nil, errors.New("service file path can not be empty")
+		return nil, errors.New("service file path can not be empty, /data/tmp/tmp_B8CB4D888176/nubeio-flow-framework.service")
 	}
 	found := fileutils.New().FileExists(serviceFilePath)
 	if !found {
