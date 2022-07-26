@@ -24,9 +24,22 @@ type UploadResponse struct {
 	UploadedFile string `json:"uploaded_file"`
 }
 
-func (inst *App) UploadApp(app *Upload) (*UploadResponse, error) {
+func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	var file = app.File
-	return inst.Upload(file)
+	resp, err := inst.Upload(file)
+	if err != nil {
+		return nil, err
+	}
+	installApp, err := inst.InstallEdgeApp(&Install{
+		Name:      app.Name,
+		BuildName: app.BuildName,
+		Version:   app.Version,
+		Source:    resp.UploadedFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return installApp, nil
 }
 
 // Upload upload a build

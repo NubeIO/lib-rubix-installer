@@ -20,7 +20,7 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-func (inst *App) InstallApp(app *Install) (*AppResponse, error) {
+func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	var appName = app.Name
 	var appBuildName = app.BuildName
 	var version = app.Version
@@ -37,12 +37,13 @@ func (inst *App) InstallApp(app *Install) (*AppResponse, error) {
 	if source == "" {
 		return nil, errors.New("app build source can not be empty, try: /data/tmp/tmp_1223/flow-framework.zip")
 	}
-	return inst.installApp(appName, appBuildName, version, source)
+	return inst.installEdgeApp(appName, appBuildName, version, source)
 }
 
 // InstallApp make all the required dirs and unzip build
 //	zip, pass in the zip folder, or you can pass in a local path to param localZip
-func (inst *App) installApp(appName, appBuildName, version string, source string) (*AppResponse, error) {
+func (inst *App) installEdgeApp(appName, appBuildName, version string, source string) (*AppResponse, error) {
+
 	// make the dirs
 	err := inst.DirsInstallApp(appName, appBuildName, version)
 	if err != nil {
@@ -74,10 +75,8 @@ func (inst *App) installApp(appName, appBuildName, version string, source string
 					return nil, err
 				}
 			}
-
 		}
 	}
-
 	return inst.ConfirmAppInstalled(appName, appBuildName), err
 
 }
