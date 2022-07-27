@@ -7,7 +7,6 @@ require (
 	github.com/NubeIO/lib-dirs v0.0.2
 	github.com/NubeIO/lib-systemctl-go v0.0.5
 	github.com/NubeIO/lib-uuid v0.0.2
-	github.com/klauspost/cpuid/v2 v2.1.0
 	github.com/sirupsen/logrus v1.8.1
 )
 
