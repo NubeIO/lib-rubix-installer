@@ -1,64 +1,90 @@
 package installer
 
 import (
-	"fmt"
 	"github.com/NubeIO/lib-command/command"
 	"github.com/NubeIO/lib-command/unixcmd"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
 
-type MatchBuild struct {
-	MatchName          bool   `json:"match_name"`
-	MatchNamePartly    bool   `json:"match_name_partly"`
-	MatchVersion       bool   `json:"match_version"`
-	MatchVersionPartly bool   `json:"match_version_partly"`
-	BuildZipName       string `json:"file_name"`
-	Arch               string `json:"arch"`
+type BuildDetails struct {
+	MatchedName    string `json:"matched_name"`
+	MatchedVersion string `json:"matched_version"`
+	MatchedArch    string `json:"matched_arch"`
+	ZipName        string `json:"zip_name"`
 }
 
-func (inst *App) BuildCheck(appName, version, path string) (*MatchBuild, error) {
-	details, err := getFileDetails(path)
-	if err != nil {
-		return nil, err
-	}
-	checks := &MatchBuild{}
-	for _, detail := range details {
-		if detail.Extension == ".zip" {
-			fileName := detail.Name
-			if strings.Contains(fileName, appName) {
-				checks.MatchNamePartly = true
+func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
+	parts := strings.Split(zipName, "-")
+	count := 0
+	name := ""
+	version := ""
+	arch := ""
+	for i, part := range parts { // match version
+		p := strings.Split(part, ".")
+		// if len is 3 eg, 0.0.1
+		isNum := 0
+		if len(p) == 3 || len(p) == 4 {
+			// check if they are numbers
+			for _, s := range p {
+				if _, err := strconv.Atoi(s); err == nil {
+					isNum++
+				}
 			}
-			if strings.Contains(fileName, version) {
-				checks.MatchVersionPartly = true
+			if isNum == 3 {
+				count = i
+				version = part
+				version = strings.Trim(version, ".zip")
 			}
-			match, count, versionCheck, archMatch, arch := matchRepoName(fileName, appName)
-			if !match {
-				errMsg := fmt.Sprintf("failed on match uploaded app, match-count:%d zip file name:%s repo-name:%s arch%s", count, fileName, appName, arch)
-				log.Errorln(errMsg)
-			} else {
-				checks.MatchName = true
+			for _, s := range p { // match arch
+				if s == "amd64" {
+					arch = "amd64"
+				}
+				if s == "armv7" {
+					arch = "armv7"
+				}
 			}
-			if !archMatch {
-				errMsg := fmt.Sprintf("failed on match arch, zip file name:%s repo-name:%s arch%s", fileName, appName, arch)
-				log.Errorln(errMsg)
-			}
-			if version != fmt.Sprintf("v%s", versionCheck) {
-				errMsg := fmt.Sprintf("failed on match arch, zip file name:%s repo-name:%s arch%s", fileName, appName, arch)
-				log.Errorln(errMsg)
-			} else {
-				checks.MatchVersionPartly = true
-				checks.MatchVersion = true
-			}
-			checks.BuildZipName = fileName
-			checks.Arch = arch
 		}
 	}
-	return checks, nil
+	name = strings.Join(parts[0:count], "-")
+	return &BuildDetails{
+		MatchedName:    name,
+		MatchedVersion: version,
+		MatchedArch:    arch,
+		ZipName:        zipName,
+	}
+}
 
+// GetBuildZipNameByArch // get a build by its arch
+func (inst *App) GetBuildZipNameByArch(path, arch string) (*BuildDetails, error) {
+	var out *BuildDetails
+	details, err := getFileDetails(path)
+	if err != nil {
+		return out, err
+	}
+	for _, name := range details {
+		app := inst.GetZipBuildDetails(name.Name)
+		if app.MatchedArch == arch {
+			out = app
+		}
+	}
+	return out, nil
+}
+
+// GetBuildZipNames // get all the builds zips from a path
+func (inst *App) GetBuildZipNames(path string) ([]BuildDetails, error) {
+	var out []BuildDetails
+	details, err := getFileDetails(path)
+	if err != nil {
+		return out, err
+	}
+	for _, name := range details {
+		app := inst.GetZipBuildDetails(name.Name)
+		out = append(out, *app)
+	}
+	return out, nil
 }
 
 type fileDetails struct {

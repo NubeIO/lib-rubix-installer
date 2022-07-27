@@ -47,7 +47,7 @@ func (inst *App) installEdgeApp(appName, appBuildName, version string, source st
 	// make the dirs
 	err := inst.DirsInstallApp(appName, appBuildName, version)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("install edge app make dirs:", err.Error()))
 	}
 	log.Infof("made all dirs for app:%s,  buildName:%s, version:%s", appName, appBuildName, version)
 	dest := inst.getAppInstallPathAndVersion(appBuildName, version)
@@ -56,12 +56,11 @@ func (inst *App) installEdgeApp(appName, appBuildName, version string, source st
 	// unzip the build to the app dir  /data/rubix-service/install/wires-build
 	_, err = inst.unZip(source, dest) // unzip the build
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("install edge app unzip err:", err.Error()))
 	}
-
 	files, err := inst.listFiles(dest)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("install edge app list files err:", err.Error()))
 	}
 	if len(files) > 0 {
 		for _, file := range files {
@@ -72,7 +71,7 @@ func (inst *App) installEdgeApp(appName, appBuildName, version string, source st
 			if knownBuildNames(file) {
 				err = inst.MoveFile(existingFile, newFile, true) // rename the build
 				if err != nil {
-					return nil, err
+					return nil, errors.New(fmt.Sprintf("install edge app rename file err:", err.Error()))
 				}
 			}
 		}

@@ -15,6 +15,8 @@ type Upload struct {
 	Name      string                `json:"name"`
 	BuildName string                `json:"build_name"`
 	Version   string                `json:"version"`
+	Product   string                `json:"product"`
+	Arch      string                `json:"arch"`
 	File      *multipart.FileHeader `json:"file"`
 }
 
@@ -24,12 +26,59 @@ type UploadResponse struct {
 	UploadedFile string `json:"uploaded_file"`
 }
 
+func (inst *App) checkArch(appName, version, buildZipName, archType, productType string) error {
+	check := inst.GetZipBuildDetails(buildZipName)
+	productInfo, err := inst.GetProduct() // same api as 0.0.0.0:1661/api/system/product check the arch type
+	if err != nil {
+		log.Errorf("upload build get product type err:%s", err.Error())
+		return err
+	}
+	if check.MatchedArch != productInfo.Arch {
+		errMsg := fmt.Sprintf("upload build incorrect arch type was uploaded build arch:%s host arch:%s", check.MatchedArch, productInfo.Arch)
+		log.Errorf(errMsg)
+		return errors.New(errMsg)
+	}
+	if productType != productInfo.Product {
+		errMsg := fmt.Sprintf("upload build incorrect product type was uploaded build arch:%s host product:%s", productType, productInfo.Product)
+		log.Errorf(errMsg)
+		return errors.New(errMsg)
+	}
+	return nil
+
+}
+
 func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	var file = app.File
+	var appName = app.Name
+	var appBuildName = app.BuildName
+	var version = app.Version
+	var archType = app.Arch
+	var productType = app.Product
+	if appName == "" {
+		return nil, errors.New("app name can not be empty")
+	}
+	if appBuildName == "" {
+		return nil, errors.New("app build name can not be empty")
+	}
+	if version == "" {
+		return nil, errors.New("app version can not be empty")
+	}
+	if archType == "" {
+		return nil, errors.New("arch type can not be empty, try armv7 amd64")
+	}
+	if productType == "" {
+		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
+	}
+
+	err := inst.checkArch(appName, version, file.Filename, archType, productType)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:", err.Error()))
+	}
 	resp, err := inst.Upload(file)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("upload edge app unzip err:", err.Error()))
 	}
+
 	installApp, err := inst.InstallEdgeApp(&Install{
 		Name:      app.Name,
 		BuildName: app.BuildName,

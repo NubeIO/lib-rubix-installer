@@ -43,6 +43,11 @@ func (inst *App) GetStoreDir() string {
 	return filePath(inst.StoreDir)
 }
 
+// GetStoreAppPathAndVersion get the full app install path and version => /data/store/apps/rubix-wires/v0.0.1
+func (inst *App) GetStoreAppPathAndVersion(appName, version string) string {
+	return filePath(fmt.Sprintf("%s/%s/%s", inst.StoreDir, appName, version))
+}
+
 // GetAppInstallPathAndVersion get the full app install path and version => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) GetAppInstallPathAndVersion(appBuildName, version string) string {
 	return inst.getAppInstallPathAndVersion(appBuildName, version)

@@ -7,8 +7,8 @@ require (
 	github.com/NubeIO/lib-dirs v0.0.2
 	github.com/NubeIO/lib-systemctl-go v0.0.5
 	github.com/NubeIO/lib-uuid v0.0.2
-	github.com/pkg/errors v0.9.1
+	github.com/klauspost/cpuid/v2 v2.1.0
 	github.com/sirupsen/logrus v1.8.1
 )
 
-require golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+require golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e // indirect
