@@ -12,12 +12,11 @@ import (
 )
 
 type Upload struct {
-	Name      string                `json:"name"`
-	BuildName string                `json:"build_name"`
-	Version   string                `json:"version"`
-	Product   string                `json:"product"`
-	Arch      string                `json:"arch"`
-	File      *multipart.FileHeader `json:"file"`
+	Name    string                `json:"name"`
+	Version string                `json:"version"`
+	Product string                `json:"product"`
+	Arch    string                `json:"arch"`
+	File    *multipart.FileHeader `json:"file"`
 }
 
 type UploadResponse struct {
@@ -50,15 +49,11 @@ func (inst *App) checkArch(appName, version, buildZipName, archType, productType
 func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	var file = app.File
 	var appName = app.Name
-	var appBuildName = app.BuildName
 	var version = app.Version
 	var archType = app.Arch
 	var productType = app.Product
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
-	}
-	if appBuildName == "" {
-		return nil, errors.New("app build name can not be empty")
 	}
 	if version == "" {
 		return nil, errors.New("app version can not be empty")
@@ -72,18 +67,17 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 
 	err := inst.checkArch(appName, version, file.Filename, archType, productType)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:", err.Error()))
+		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
 	}
 	resp, err := inst.Upload(file)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("upload edge app unzip err:", err.Error()))
+		return nil, errors.New(fmt.Sprintf("upload edge app unzip err:%s", err.Error()))
 	}
 
 	installApp, err := inst.InstallEdgeApp(&Install{
-		Name:      app.Name,
-		BuildName: app.BuildName,
-		Version:   app.Version,
-		Source:    resp.UploadedFile,
+		Name:    app.Name,
+		Version: app.Version,
+		Source:  resp.UploadedFile,
 	})
 	if err != nil {
 		return nil, err
@@ -118,14 +112,13 @@ func (inst *App) Upload(zip *multipart.FileHeader) (*UploadResponse, error) {
 
 func (inst *App) UploadServiceFile(app *Upload) (*UploadResponse, error) {
 	var appName = app.Name
-	var appBuildName = app.BuildName
 	var version = app.Version
 	var file = app.File
-	return inst.uploadServiceFile(appName, appBuildName, version, file)
+	return inst.uploadServiceFile(appName, version, file)
 }
 
 // uploadApp
-func (inst *App) uploadServiceFile(appName, appBuildName, version string, file *multipart.FileHeader) (*UploadResponse, error) {
+func (inst *App) uploadServiceFile(appName, version string, file *multipart.FileHeader) (*UploadResponse, error) {
 	// make the dirs
 	var err error
 	if filepath.Ext(file.Filename) != ".service" {
@@ -139,7 +132,7 @@ func (inst *App) uploadServiceFile(appName, appBuildName, version string, file *
 		return nil, err
 	}
 	log.Infof("upload service to tmp dir:%s", tmpDir)
-	log.Infof("app:%s buildName:%s version:%s", appName, appBuildName, version)
+	log.Infof("app:%s version:%s", appName, version)
 	// save app in tmp dir
 	zipSource, err := inst.SaveUploadedFile(file, tmpDir)
 	if err != nil {

@@ -29,13 +29,13 @@ func (inst *App) getAppPath(appName string) string {
 }
 
 // GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
-func (inst *App) GetAppInstallPath(appBuildName string) string {
-	return inst.getAppInstallPath(appBuildName)
+func (inst *App) GetAppInstallPath(appName string) string {
+	return inst.getAppInstallPath(appName)
 }
 
 // GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
-func (inst *App) getAppInstallPath(appBuildName string) string {
-	return filePath(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appBuildName))
+func (inst *App) getAppInstallPath(appName string) string {
+	return filePath(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
 }
 
 // GetStoreDir get store dir
@@ -49,11 +49,11 @@ func (inst *App) GetStoreAppPathAndVersion(appName, version string) string {
 }
 
 // GetAppInstallPathAndVersion get the full app install path and version => /data/rubix-service/apps/install/wires-builds/v0.0.1
-func (inst *App) GetAppInstallPathAndVersion(appBuildName, version string) string {
-	return inst.getAppInstallPathAndVersion(appBuildName, version)
+func (inst *App) GetAppInstallPathAndVersion(appName, version string) string {
+	return inst.getAppInstallPathAndVersion(appName, version)
 }
 
 // GetAppInstallPathAndVersion get the full app install path and version => /data/rubix-service/apps/install/wires-builds/v0.0.1
-func (inst *App) getAppInstallPathAndVersion(appBuildName, version string) string {
-	return filePath(fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appBuildName, version))
+func (inst *App) getAppInstallPathAndVersion(appName, version string) string {
+	return filePath(fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appName, version))
 }

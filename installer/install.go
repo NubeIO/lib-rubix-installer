@@ -9,7 +9,6 @@ import (
 
 type Install struct {
 	Name        string `json:"name"`
-	BuildName   string `json:"build_name"`
 	Version     string `json:"version"`
 	ServiceName string `json:"service_name"`
 	Source      string `json:"source"`
@@ -22,14 +21,10 @@ type Response struct {
 
 func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	var appName = app.Name
-	var appBuildName = app.BuildName
 	var version = app.Version
 	var source = app.Source
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
-	}
-	if appBuildName == "" {
-		return nil, errors.New("app build name can not be empty")
 	}
 	if version == "" {
 		return nil, errors.New("app version can not be empty")
@@ -37,30 +32,30 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	if source == "" {
 		return nil, errors.New("app build source can not be empty, try: /data/tmp/tmp_1223/flow-framework.zip")
 	}
-	return inst.installEdgeApp(appName, appBuildName, version, source)
+	return inst.installEdgeApp(appName, version, source)
 }
 
 // InstallApp make all the required dirs and unzip build
 //	zip, pass in the zip folder, or you can pass in a local path to param localZip
-func (inst *App) installEdgeApp(appName, appBuildName, version string, source string) (*AppResponse, error) {
+func (inst *App) installEdgeApp(appName, version string, source string) (*AppResponse, error) {
 
 	// make the dirs
-	err := inst.DirsInstallApp(appName, appBuildName, version)
+	err := inst.DirsInstallApp(appName, version)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("install edge app make dirs:", err.Error()))
+		return nil, errors.New(fmt.Sprintf("install edge app make dirs:%s", err.Error()))
 	}
-	log.Infof("made all dirs for app:%s,  buildName:%s, version:%s", appName, appBuildName, version)
-	dest := inst.getAppInstallPathAndVersion(appBuildName, version)
+	log.Infof("made all dirs for app:%s, version:%s", appName, version)
+	dest := inst.getAppInstallPathAndVersion(appName, version)
 	log.Infof("app zip source:%s", source)
 	log.Infof("app zip dest:%s", dest)
 	// unzip the build to the app dir  /data/rubix-service/install/wires-build
 	_, err = inst.unZip(source, dest) // unzip the build
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("install edge app unzip err:", err.Error()))
+		return nil, errors.New(fmt.Sprintf("install edge app unzip err:%s", err.Error()))
 	}
 	files, err := inst.listFiles(dest)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("install edge app list files err:", err.Error()))
+		return nil, errors.New(fmt.Sprintf("install edge app list files err:%s", err.Error()))
 	}
 	if len(files) > 0 {
 		for _, file := range files {
@@ -71,12 +66,12 @@ func (inst *App) installEdgeApp(appName, appBuildName, version string, source st
 			if knownBuildNames(file) {
 				err = inst.MoveFile(existingFile, newFile, true) // rename the build
 				if err != nil {
-					return nil, errors.New(fmt.Sprintf("install edge app rename file err:", err.Error()))
+					return nil, errors.New(fmt.Sprintf("install edge app rename file err:%s", err.Error()))
 				}
 			}
 		}
 	}
-	return inst.ConfirmAppInstalled(appName, appBuildName), err
+	return inst.ConfirmAppInstalled(appName, appName)
 
 }
 

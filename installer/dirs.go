@@ -13,12 +13,9 @@ import (
 // DirsInstallApp make all the installation dirs
 //	appDirName => rubix-wires
 //	appInstallName => wires-builds
-func (inst *App) DirsInstallApp(appName, appBuildName, version string) error {
+func (inst *App) DirsInstallApp(appName, version string) error {
 	if appName == "" {
 		return errors.New("app name can not be empty")
-	}
-	if appBuildName == "" {
-		return errors.New("app build name can not be empty")
 	}
 	if version == "" {
 		return errors.New("app version can not be empty")
@@ -33,13 +30,13 @@ func (inst *App) DirsInstallApp(appName, appBuildName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeAppInstallDir(appBuildName)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s", appBuildName)
+	err = inst.MakeAppInstallDir(appName)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s", appName)
 	if err != nil {
 		return err
 	}
-	err = inst.MakeAppVersionDir(appBuildName, version)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s version:%s", appBuildName, version)
+	err = inst.MakeAppVersionDir(appName, version)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s version:%s", appName, version)
 	if err != nil {
 		return err
 	}
@@ -104,14 +101,14 @@ func (inst *App) MakeAppInstallDir(appBuildName string, removeExisting ...bool) 
 }
 
 //MakeAppVersionDir  => /data/rubix-service/apps/install/wires-builds/v0.0.1
-func (inst *App) MakeAppVersionDir(appBuildName, version string) error {
-	if err := emptyPath(appBuildName); err != nil {
+func (inst *App) MakeAppVersionDir(appName, version string) error {
+	if err := emptyPath(appName); err != nil {
 		return err
 	}
 	if err := checkVersion(version); err != nil {
 		return err
 	}
-	appDir := fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appBuildName, version)
+	appDir := fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appName, version)
 	return makeDirectoryIfNotExists(appDir, os.FileMode(inst.FilePerm))
 }
 
@@ -152,7 +149,6 @@ func (inst *App) MakeDataDir() error {
 
 //MakeDirectoryIfNotExists make dir
 func (inst *App) MakeDirectoryIfNotExists(path string, perm os.FileMode) error {
-
 	return makeDirectoryIfNotExists(path, perm)
 }
 

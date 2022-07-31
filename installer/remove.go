@@ -27,7 +27,7 @@ type RemoveRes struct {
 
 // UninstallService
 //	- service nubeio-flow-framework
-func (inst *App) UninstallService(appName, appBuildName, service string) (*RemoveRes, error) {
+func (inst *App) UninstallService(appName, service string, deleteApp bool) (*RemoveRes, error) {
 	ser := ctl.New(service, "")
 	ser.InstallOpts = ctl.InstallOpts{
 		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
@@ -42,20 +42,25 @@ func (inst *App) UninstallService(appName, appBuildName, service string) (*Remov
 		DeleteServiceFile:    remove.DeleteServiceFile,
 		DeleteServiceFileUsr: remove.DeleteServiceFileUsr,
 	}
-	err := inst.RemoveApp(appName)
-	var removeApp = "removed app from data dir ok"
-	var removeAppInstall = "removed app from install dir ok"
-	if err != nil {
-		resp.Error = err.Error()
-		removeApp = fmt.Sprintf("failed to delete app from data dir")
+	if deleteApp {
+		err := inst.RemoveApp(appName)
+		var removeApp = "removed app from data dir ok"
+		var removeAppInstall = "removed app from install dir ok"
+		if err != nil {
+			resp.Error = err.Error()
+			removeApp = fmt.Sprintf("failed to delete app from data dir")
+		}
+		err = inst.RemoveAppInstall(appName)
+		if err != nil {
+			resp.Error = err.Error()
+			removeAppInstall = fmt.Sprintf("failed to delete app from install dir")
+		}
+		resp.DeleteAppDir = removeApp
+		resp.DeleteAppInstallDir = removeAppInstall
+	} else {
+		resp.DeleteAppDir = "app was not deleted"
+		resp.DeleteAppInstallDir = "app install dir was not deleted"
 	}
-	err = inst.RemoveAppInstall(appBuildName)
-	if err != nil {
-		resp.Error = err.Error()
-		removeAppInstall = fmt.Sprintf("failed to delete app from install dir")
-	}
-	resp.DeleteAppDir = removeApp
-	resp.DeleteAppInstallDir = removeAppInstall
 	return resp, nil
 }
 
@@ -65,12 +70,11 @@ func (inst *App) RemoveApp(appName string) error {
 }
 
 // RemoveAppInstall delete app install path
-func (inst *App) RemoveAppInstall(appBuildName string) error {
-	return inst.RmRF(inst.getAppInstallPath(appBuildName))
+func (inst *App) RemoveAppInstall(appName string) error {
+	return inst.RmRF(inst.getAppInstallPath(appName))
 }
 
 // RmRF remove file and all files inside
 func (inst *App) RmRF(path string) error {
 	return fileutils.New().RmRF(path)
-
 }

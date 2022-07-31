@@ -15,8 +15,8 @@ var libSystemPath = "/lib/systemd"
 var etcSystemPath = "/etc/systemd"
 
 type App struct {
-	Name             string `json:"name"`               // rubix-wires
-	AppBuildName     string `json:"app_build_name"`     // wires-builds
+	Name string `json:"name"` // rubix-wires
+	//AppBuildName     string `json:"app_build_name"`     // wires-builds
 	Version          string `json:"version"`            // v1.1.1
 	DataDir          string `json:"data_dir"`           // /data
 	HostDownloadPath string `json:"host_download_path"` // home/user/downloads
