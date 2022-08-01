@@ -1,10 +1,7 @@
-github.com/NubeIO/lib-command v0.0.2 h1:jTg8YRSffIBsPAbU9X1Dn+L4bQ8e7PY2p7zJEcrTjrY=
-github.com/NubeIO/lib-command v0.0.2/go.mod h1:Qjl490ti7E47AhftOOvUfhAsM6NhZpBAeZlNfmy6Cd0=
-github.com/NubeIO/lib-dirs v0.0.1/go.mod h1:PCDWQm82Nezp9oyhkpqyfVH6w6+1lzfDwfRdYVF5sPY=
 github.com/NubeIO/lib-dirs v0.0.2 h1:8mdDMNpNgmcyXBSllyNdeN/5bgCJ7LssaRqg8N2YVC4=
 github.com/NubeIO/lib-dirs v0.0.2/go.mod h1:PCDWQm82Nezp9oyhkpqyfVH6w6+1lzfDwfRdYVF5sPY=
-github.com/NubeIO/lib-systemctl-go v0.0.5 h1:Bh0ibU56WR/Em+39J4ygQ7KQEqT2+kSkml4WcHl0hv8=
-github.com/NubeIO/lib-systemctl-go v0.0.5/go.mod h1:gpVy2jcgc8AiCBf3k+sSDwDoxYtdNzd3hEeK3ygJz+c=
+github.com/NubeIO/lib-systemctl-go v0.0.6 h1:riR7j/jJRXGH3YCinZoZ7u++SeEa2GRjmh+40pIIni8=
+github.com/NubeIO/lib-systemctl-go v0.0.6/go.mod h1:gpVy2jcgc8AiCBf3k+sSDwDoxYtdNzd3hEeK3ygJz+c=
 github.com/NubeIO/lib-uuid v0.0.2 h1:6Ihw3jvg5aEGIXJXFmRozfWK4+Szo96lbdCv6gFIqRs=
 github.com/NubeIO/lib-uuid v0.0.2/go.mod h1:lLx2E+mqNntnVsgnA44rEVQXoXzKTcZDYTQdNacJLDg=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
