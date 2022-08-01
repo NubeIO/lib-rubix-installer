@@ -78,3 +78,8 @@ func (inst *App) RemoveAppInstall(appName string) error {
 func (inst *App) RmRF(path string) error {
 	return fileutils.New().RmRF(path)
 }
+
+// Rm remove file
+func (inst *App) Rm(path string) error {
+	return fileutils.New().Rm(path)
+}

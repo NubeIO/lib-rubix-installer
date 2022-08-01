@@ -7,17 +7,21 @@ import (
 	"os"
 )
 
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
 func (inst *App) ListFullBackups() ([]string, error) {
 	path, err := inst.generateHomeFullBackupFolderName()
 	if err != nil {
 		return nil, err
 	}
 	return inst.listFiles(path)
+
 }
 
 func (inst *App) ListAppBackupsDirs() ([]string, error) {
-	path, err := inst.backUpHome()
-	path = fmt.Sprintf("%s/apps", path)
+	path, err := inst.generateAppHomeBackupsFolderName()
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +37,90 @@ func (inst *App) ListBackupsByApp(appName string) ([]string, error) {
 		return nil, err
 	}
 	return inst.listFiles(path)
+}
+
+func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
+	resp := &MessageResponse{}
+	path, err := inst.generateHomeFullBackupFolderName()
+	if err != nil {
+		resp.Message = "failed to find backup path"
+		return resp, err
+	}
+	err = inst.RmRF(path)
+	if err != nil {
+		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		return resp, err
+	}
+	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	return resp, nil
+}
+
+func (inst *App) DeleteAllAppBackups() (*MessageResponse, error) {
+	resp := &MessageResponse{}
+	path, err := inst.generateAppHomeBackupsFolderName()
+	if err != nil {
+		resp.Message = "failed to find backup path"
+		return resp, err
+	}
+	err = inst.RmRF(path)
+	if err != nil {
+		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		return resp, err
+	}
+	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	return resp, nil
+}
+
+// DeleteAppAllBackUpByName delete all apps backup, eg /data/backups/apps/flow-framework
+func (inst *App) DeleteAppAllBackUpByName(appName string) (*MessageResponse, error) {
+	resp := &MessageResponse{}
+	path, err := inst.generateAppHomeBackupsFolderName()
+	if err != nil {
+		resp.Message = "failed to find backup path"
+		return resp, err
+	}
+	path = fmt.Sprintf("%s/%s", path, appName)
+	err = inst.RmRF(path)
+	if err != nil {
+		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		return resp, err
+	}
+	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	return resp, nil
+}
+
+// DeleteAppOneBackUpByName delete an app backup, eg /data/backups/apps/flow-framework/appName-version-2022-07-31 12:02:01
+func (inst *App) DeleteAppOneBackUpByName(appName, backupFolder string) (*MessageResponse, error) {
+	resp := &MessageResponse{}
+	path, err := inst.generateAppHomeBackupsFolderName()
+	if err != nil {
+		resp.Message = "failed to find backup path"
+		return resp, err
+	}
+	path = fmt.Sprintf("%s/%s/%s", path, appName, backupFolder)
+	err = inst.Rm(path)
+	if err != nil {
+		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		return resp, err
+	}
+	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	return resp, nil
+}
+
+func (inst *App) DeleteAllBackups() (*MessageResponse, error) {
+	resp := &MessageResponse{}
+	path, err := inst.backUpHome()
+	if err != nil {
+		resp.Message = "failed to find backup path"
+		return resp, err
+	}
+	err = inst.RmRF(path)
+	if err != nil {
+		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		return resp, err
+	}
+	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	return resp, nil
 }
 
 // FullBackUp make a backup of the whole edge device from the /data
@@ -55,16 +143,15 @@ func (inst *App) FullBackUp(deiceName ...string) (string, error) {
 		if deiceName[0] != "" {
 			zipName = fmt.Sprintf("%s/%s-full-backup-%s.zip", path, deiceName[0], timestamp())
 		}
-
 	}
 	return zipName, fileutils.New().RecursiveZip(source, zipName)
 }
 
-// BackupApp backup an app  /data/backups/appName/appName-version-2022-07-31 12:02:01
+// BackupApp backup an app  /data/backups/apps/appName/appName-version-2022-07-31 12:02:01
 func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) {
 	found := inst.ConfirmAppDir(appName)
 	if !found {
-		return "", errors.New("failed to find app")
+		return "", errors.New(fmt.Sprintf("failed to find app:%s", appName))
 	}
 	version := inst.GetAppVersion(appName)
 	if version == "" {
@@ -95,14 +182,14 @@ func (inst *App) backUpHome() (string, error) {
 	return path, err
 }
 
-// backUpHome backup home dir /user/home/backup
+// backUpHome backup home dir /user/home/backup/apps
 func (inst *App) generateAppHomeBackupsFolderName() (string, error) {
 	home, err := inst.backUpHome()
 	path := fmt.Sprintf("%s/apps", home)
 	return path, err
 }
 
-// generateHomeBackupFolderName backup an app  /user/home/backup/full//v0.0.1
+// generateHomeBackupFolderName backup an app  /user/home/backup/full/
 func (inst *App) generateHomeFullBackupFolderName() (string, error) {
 	home, err := inst.backUpHome()
 	path := fmt.Sprintf("%s/full", home)
@@ -112,7 +199,6 @@ func (inst *App) generateHomeFullBackupFolderName() (string, error) {
 // generateHomeBackupFolderName backup an app  /user/home/backup/flow-framework/v0.0.1
 func (inst *App) generateAppHomeBackupFolderName(appName string) (string, error) {
 	home, err := inst.generateAppHomeBackupsFolderName()
-
 	path := fmt.Sprintf("%s/%s", home, appName)
 	return path, err
 }

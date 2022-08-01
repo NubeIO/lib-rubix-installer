@@ -56,3 +56,46 @@ func TestApp_ListBackupsByApp(t *testing.T) {
 	fmt.Println(err)
 	fmt.Println(backs)
 }
+
+func TestApp_DeleteAllBackups(t *testing.T) {
+	var err error
+	fmt.Println(err)
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	backs, err := app.DeleteAllBackups()
+	fmt.Println(err)
+	fmt.Println(backs)
+}
+
+func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
+	var err error
+	fmt.Println(err)
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	backs, err := app.DeleteAppAllBackUpByName(appName)
+	fmt.Println(err)
+	if err != nil {
+		return
+	}
+	fmt.Println(backs)
+
+}
+
+func TestApp_DeleteAppBackUp(t *testing.T) {
+	var err error
+	fmt.Println(err)
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	byApp, err := app.ListBackupsByApp(appName)
+	fmt.Println(err)
+	if err != nil {
+		return
+	}
+	for i, folder := range byApp {
+		fmt.Println(i, folder)
+		if i == 0 {
+			backs, err := app.DeleteAppOneBackUpByName(appName, folder)
+			fmt.Println(err)
+			fmt.Println(backs)
+		}
+
+	}
+
+}
