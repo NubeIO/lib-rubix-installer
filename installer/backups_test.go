@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+/*
+This is for taking backups on an edge device
+*/
+
 func Test_BackupApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
@@ -61,7 +65,7 @@ func TestApp_DeleteAllBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
-	backs, err := app.DeleteAllBackups()
+	backs, err := app.WipeBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
 }

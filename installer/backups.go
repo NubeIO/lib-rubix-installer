@@ -11,6 +11,7 @@ type MessageResponse struct {
 	Message string `json:"message"`
 }
 
+// ListFullBackups list all the backups taken for the data dir /data
 func (inst *App) ListFullBackups() ([]string, error) {
 	path, err := inst.generateHomeFullBackupFolderName()
 	if err != nil {
@@ -20,6 +21,7 @@ func (inst *App) ListFullBackups() ([]string, error) {
 
 }
 
+// ListAppBackupsDirs list all the folder for each app
 func (inst *App) ListAppBackupsDirs() ([]string, error) {
 	path, err := inst.generateAppHomeBackupsFolderName()
 	if err != nil {
@@ -28,6 +30,7 @@ func (inst *App) ListAppBackupsDirs() ([]string, error) {
 	return inst.listFiles(path)
 }
 
+// ListBackupsByApp list all the backups taken for each app
 func (inst *App) ListBackupsByApp(appName string) ([]string, error) {
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
@@ -39,6 +42,7 @@ func (inst *App) ListBackupsByApp(appName string) ([]string, error) {
 	return inst.listFiles(path)
 }
 
+//DeleteAllFullBackups will a delete a full backup of the data dir /data
 func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
 	path, err := inst.generateHomeFullBackupFolderName()
@@ -55,6 +59,7 @@ func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 	return resp, nil
 }
 
+// DeleteAllAppBackups delete all the app backups /user/home/backup/apps
 func (inst *App) DeleteAllAppBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
 	path, err := inst.generateAppHomeBackupsFolderName()
@@ -107,7 +112,8 @@ func (inst *App) DeleteAppOneBackUpByName(appName, backupFolder string) (*Messag
 	return resp, nil
 }
 
-func (inst *App) DeleteAllBackups() (*MessageResponse, error) {
+// WipeBackups delete all the backups
+func (inst *App) WipeBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
 	path, err := inst.backUpHome()
 	if err != nil {
@@ -189,14 +195,14 @@ func (inst *App) generateAppHomeBackupsFolderName() (string, error) {
 	return path, err
 }
 
-// generateHomeBackupFolderName backup an app  /user/home/backup/full/
+// generateHomeFullBackupFolderName backup an app  /user/home/backup/full/
 func (inst *App) generateHomeFullBackupFolderName() (string, error) {
 	home, err := inst.backUpHome()
 	path := fmt.Sprintf("%s/full", home)
 	return path, err
 }
 
-// generateHomeBackupFolderName backup an app  /user/home/backup/flow-framework/v0.0.1
+// generateAppHomeBackupFolderName backup an app  /user/home/backup/flow-framework/v0.0.1
 func (inst *App) generateAppHomeBackupFolderName(appName string) (string, error) {
 	home, err := inst.generateAppHomeBackupsFolderName()
 	path := fmt.Sprintf("%s/%s", home, appName)
