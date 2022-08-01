@@ -43,22 +43,23 @@ func Test_BackupApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
-	installed, err := app.GetApps()
+	back, err := app.BackupApp(appName, "testDevice1234")
 	fmt.Println(err)
 	if err != nil {
 		return
 	}
-	pprint.PrintJOSN(installed)
+	fmt.Println(back)
+
 }
 
 func Test_BackupApps(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
-	installed, err := app.GetApps()
+	back, err := app.FullBackUp("testDevice1234")
 	fmt.Println(err)
 	if err != nil {
 		return
 	}
-	pprint.PrintJOSN(installed)
+	fmt.Println(back)
 }

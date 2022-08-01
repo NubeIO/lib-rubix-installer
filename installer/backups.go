@@ -7,25 +7,30 @@ import (
 	"os"
 )
 
-// BackupFullEdge make a backup of the whole edge device from the /data
-func (inst *App) BackupFullEdge(appName string) (string, error) {
-	found := inst.DirExists("/data")
+// FullBackUp make a backup of the whole edge device from the /data
+func (inst *App) FullBackUp(deiceName ...string) (string, error) {
+	found := inst.DirExists(inst.DataDir)
 	if !found {
 		return "", errors.New("failed to find /data")
 	}
-	version := inst.GetAppVersion(appName)
-	if version == "" {
-		return "", errors.New("failed to find app version")
-	}
-	if err := inst.makeBackupAppDir(appName); err != nil {
+	source := inst.DataDir
+	path, err := inst.generateHomeFullBackupFolderName()
+	if err != nil {
 		return "", err
 	}
-	path := fmt.Sprintf("/data/backup/%s-%s-%s", appName, version, timestamp())
-	return path, fileutils.New().RecursiveZip("", path)
+	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FilePerm))
+	if err != nil {
+		return "", err
+	}
+	zipName := fmt.Sprintf("%s/full-backup-%s.zip", path, timestamp())
+	if len(deiceName) > 0 {
+		zipName = fmt.Sprintf("%s/%s-full-backup-%s.zip", path, deiceName[0], timestamp())
+	}
+	return path, fileutils.New().RecursiveZip(source, zipName)
 }
 
-// BackupApp backup an app  /data/backups/appName/appName_2022-07-31 12:02:01
-func (inst *App) BackupApp(appName string) (string, error) {
+// BackupApp backup an app  /data/backups/appName/appName-version-2022-07-31 12:02:01
+func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) {
 	found := inst.ConfirmAppDir(appName)
 	if !found {
 		return "", errors.New("failed to find app")
@@ -34,31 +39,43 @@ func (inst *App) BackupApp(appName string) (string, error) {
 	if version == "" {
 		return "", errors.New("failed to find app version")
 	}
-	if err := inst.makeBackupAppDir(appName); err != nil {
+	source := fmt.Sprintf("%s/%s", inst.DataDir, appName)
+	path, err := inst.generateAppHomeBackupFolderName(appName)
+	if err != nil {
 		return "", err
 	}
-	path := fmt.Sprintf("/data/backup/%s-%s-%s", appName, version, timestamp())
-	return path, fileutils.New().RecursiveZip("", path)
-}
-
-// makeHomeBackupDir backup an app  /user/home/backup
-func (inst *App) makeHomeBackupDir(appName string) error {
-	home, err := fileutils.Dir()
+	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FilePerm))
 	if err != nil {
-		return err
+		return "", err
 	}
-	name := fmt.Sprintf("%s/backup/%s", home, appName)
-	return makeDirectoryIfNotExists(name, os.FileMode(inst.FilePerm))
+	zipName := fmt.Sprintf("%s/backup-%s-%s-%s.zip", path, appName, version, timestamp())
+	if len(deiceName) > 0 {
+		zipName = fmt.Sprintf("%s/%s-full-backup-%s.zip", path, deiceName[0], timestamp())
+	}
+	return path, fileutils.New().RecursiveZip(source, zipName)
 }
 
-// getHomeBackupDir backup an app  /user/home/backup
-func (inst *App) getHomeBackupDir() (string, error) {
+// generateHomeBackupFolderName backup an app  /user/home/backup/full//v0.0.1
+func (inst *App) backUpHome() (string, error) {
 	home, err := fileutils.Dir()
-	return fmt.Sprintf("%s/backup", home), err
+	path := fmt.Sprintf("%s/backup", home)
+	return path, err
 }
 
-// makeBackupAppDir backup an app /data/backups/appName/appName_2022-07-31 12:02:01
-func (inst *App) makeBackupAppDir(appName string) error {
-	name := fmt.Sprintf("/data/backup/%s", appName)
-	return makeDirectoryIfNotExists(name, os.FileMode(inst.FilePerm))
+// generateHomeBackupFolderName backup an app  /user/home/backup/full//v0.0.1
+func (inst *App) generateHomeFullBackupFolderName() (string, error) {
+	home, err := inst.backUpHome()
+	path := fmt.Sprintf("%s/full", home)
+	return path, err
+}
+
+// generateHomeBackupFolderName backup an app  /user/home/backup/flow-framework/v0.0.1
+func (inst *App) generateAppHomeBackupFolderName(appName string) (string, error) {
+	home, err := inst.backUpHome()
+	version := inst.GetAppVersion(appName)
+	if version == "" {
+		return "", errors.New("failed to find app version")
+	}
+	path := fmt.Sprintf("%s/%s/%s", home, appName, version)
+	return path, err
 }
