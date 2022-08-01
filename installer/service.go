@@ -75,9 +75,13 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	resp := &InstallResp{
 		Install: "install ok",
 	}
+	systemCtl := systemctl.New(&systemctl.Ctl{
+		UserMode: false,
+		Timeout:  defaultTimeout,
+	})
 	var ok = "action ok"
 	//reload
-	err := systemctl.DaemonReload(systemOpts)
+	err := systemCtl.DaemonReload(systemOpts)
 	if err != nil {
 		log.Errorf("failed to DaemonReload%s: err:%s", service, err.Error())
 		resp.DaemonReload = err.Error()
@@ -86,7 +90,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 		resp.DaemonReload = ok
 	}
 	//enable
-	err = systemctl.Enable(service, systemOpts)
+	err = systemCtl.Enable(service, systemOpts)
 	if err != nil {
 		log.Errorf("failed to enable%s: err:%s", service, err.Error())
 		resp.Enable = err.Error()
@@ -96,7 +100,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	}
 	log.Infof("enable new service:%s", service)
 	//start
-	err = systemctl.Restart(service, systemOpts)
+	err = systemCtl.Restart(service, systemOpts)
 	if err != nil {
 		log.Errorf("failed to start%s: err:%s", service, err.Error())
 		resp.Restart = err.Error()
@@ -106,7 +110,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	}
 	log.Infof("start new service:%s", service)
 	time.Sleep(8 * time.Second)
-	active, status, err := systemctl.IsRunning(service, systemctl.Options{})
+	active, status, err := systemCtl.IsRunning(service, systemctl.Options{})
 	if err != nil {
 		log.Errorf("service found or failed to check IsRunning: %s: %v", service, err)
 		return nil, err

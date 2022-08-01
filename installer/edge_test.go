@@ -38,28 +38,3 @@ func Test_GetApps(t *testing.T) {
 	}
 	pprint.PrintJOSN(installed)
 }
-
-func Test_BackupApp(t *testing.T) {
-	var err error
-	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
-	back, err := app.BackupApp(appName, "testDevice1234")
-	fmt.Println(err)
-	if err != nil {
-		return
-	}
-	fmt.Println(back)
-
-}
-
-func Test_BackupApps(t *testing.T) {
-	var err error
-	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
-	back, err := app.FullBackUp("testDevice1234")
-	fmt.Println(err)
-	if err != nil {
-		return
-	}
-	fmt.Println(back)
-}

@@ -36,17 +36,16 @@ func (inst *App) ConfirmAppInstalled(appName, serviceName string) (*AppResponse,
 	if version == "" {
 		return nil, errors.New("failed to find app version")
 	}
-	installed, _ := inst.IsInstalled(serviceName, inst.DefaultTimeout)
-	var isAService bool
-	if installed != nil {
-		isAService = installed.Is
-	}
+	ctl := systemctl.New(&systemctl.Ctl{
+		UserMode: false,
+		Timeout:  defaultTimeout,
+	})
+	installed, err := ctl.IsInstalled(serviceName, systemOpts)
 	return &AppResponse{
 		Name:       appName,
 		Version:    version,
-		IsAService: isAService,
-	}, nil
-
+		IsAService: installed,
+	}, err
 }
 
 func (inst *App) ConfirmAppDir(appName string) bool {

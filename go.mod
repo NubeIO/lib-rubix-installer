@@ -1,7 +1,7 @@
 module github.com/NubeIO/lib-rubix-installer
 
 go 1.17
-
+replace github.com/NubeIO/lib-systemctl-go => /home/aidan/code/go/nube/lib/lib-systemctl-go
 require (
 	github.com/NubeIO/lib-command v0.0.2
 	github.com/NubeIO/lib-dirs v0.0.2
