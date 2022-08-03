@@ -99,7 +99,5 @@ func TestApp_DeleteAppBackUp(t *testing.T) {
 			fmt.Println(err)
 			fmt.Println(backs)
 		}
-
 	}
-
 }

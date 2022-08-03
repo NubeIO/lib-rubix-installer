@@ -4,12 +4,118 @@ import (
 	"errors"
 	"fmt"
 	fileutils "github.com/NubeIO/lib-dirs/dirs"
+	"github.com/NubeIO/lib-uuid/uuid"
+	log "github.com/sirupsen/logrus"
+	"mime/multipart"
 	"os"
 )
 
 type MessageResponse struct {
 	Message string `json:"message"`
 }
+
+type RestoreResponse struct {
+	Message        string `json:"message"`
+	TakeBackupPath string `json:"take_backup_path,omitempty"`
+}
+
+/*
+RESTORE A BACK-UPS
+*/
+
+type RestoreBackup struct {
+	AppName      string                `json:"app_name"`
+	Destination  string                `json:"destination"`
+	DeviceName   string                `json:"device_name"`
+	TakeBackup   bool                  `json:"take_backup"`
+	RebootDevice bool                  `json:"reboot_device"`
+	File         *multipart.FileHeader `json:"file"`
+}
+
+// RestoreBackup restore a backup data dir /data
+func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
+	var file = back.File
+	var takeBackup = back.TakeBackup
+	var deiceName = back.DeviceName
+	var destination = back.Destination
+	if destination == "" {
+		destination = inst.DataDir
+	}
+	// delete the existing data dir
+	resp := &RestoreResponse{}
+	if takeBackup {
+		backup, err := inst.FullBackUp(deiceName)
+		if err != nil {
+			return nil, err
+		}
+		resp.TakeBackupPath = backup
+	}
+	restore, err := inst.restoreBackup(file, destination)
+	if err != nil {
+		return nil, err
+	}
+	resp.TakeBackupPath = restore.TmpFile
+	return resp, nil
+}
+
+// RestoreAppBackup restore a backup of an app /data/flow-framework
+func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error) {
+	var file = back.File
+	var takeBackup = back.TakeBackup
+	var appName = back.AppName
+	var deiceName = back.DeviceName
+	var destination = back.Destination
+	if destination == "" {
+		destination = inst.DataDir
+	}
+	// delete the existing data dir
+	resp := &RestoreResponse{}
+	if takeBackup {
+		backup, err := inst.BackupApp(appName, deiceName)
+		if err != nil {
+			return nil, err
+		}
+		resp.TakeBackupPath = backup
+	}
+	restore, err := inst.restoreBackup(file, destination)
+	if err != nil {
+		return nil, err
+	}
+	resp.TakeBackupPath = restore.TmpFile
+	return resp, nil
+}
+
+// Upload upload a build
+func (inst *App) restoreBackup(file *multipart.FileHeader, destination string) (*UploadResponse, error) {
+	// make the dirs
+	var err error
+	if destination == "" {
+		return nil, errors.New("destination can not be empty")
+	}
+	err = inst.RmRF(destination)
+	if err != nil {
+		return nil, err
+	}
+	var tmpDir string
+	if tmpDir, err = inst.MakeBackupTmpDirUpload(); err != nil {
+		return nil, err
+	}
+	log.Infof("upload build to tmp dir:%s", tmpDir)
+	// save app in tmp dir
+	zipSource, err := inst.SaveUploadedFile(file, tmpDir)
+	if err != nil {
+		return nil, err
+	}
+	return &UploadResponse{
+		FileName:     file.Filename,
+		TmpFile:      tmpDir,
+		UploadedFile: zipSource,
+	}, err
+}
+
+/*
+LIST BACK-UPS
+*/
 
 // ListFullBackups list all the backups taken for the data dir /data
 func (inst *App) ListFullBackups() ([]string, error) {
@@ -42,7 +148,11 @@ func (inst *App) ListBackupsByApp(appName string) ([]string, error) {
 	return inst.listFiles(path)
 }
 
-//DeleteAllFullBackups will a delete a full backup of the data dir /data
+/*
+DELETE BACK-UPS
+*/
+
+//DeleteAllFullBackups will delete a full backup of the data dir /data
 func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
 	path, err := inst.generateHomeFullBackupFolderName()
@@ -129,6 +239,10 @@ func (inst *App) WipeBackups() (*MessageResponse, error) {
 	return resp, nil
 }
 
+/*
+RUN A BACK-UP
+*/
+
 // FullBackUp make a backup of the whole edge device from the /data
 func (inst *App) FullBackUp(deiceName ...string) (string, error) {
 	found := inst.DirExists(inst.DataDir)
@@ -179,6 +293,17 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 		}
 	}
 	return zipName, fileutils.New().RecursiveZip(source, zipName)
+}
+
+//MakeBackupTmpDirUpload  => /user/home/backup/tmp/tmp_dir_name
+func (inst *App) MakeBackupTmpDirUpload() (string, error) {
+	home, err := inst.backUpHome()
+	if err != nil {
+		return "", err
+	}
+	tmpDir := fmt.Sprintf("%s/tmp/%s", home, uuid.ShortUUID("tmp"))
+	err = makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FilePerm))
+	return tmpDir, err
 }
 
 // backUpHome backup home dir /user/home/backup

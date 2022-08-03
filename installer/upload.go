@@ -64,7 +64,6 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if productType == "" {
 		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
-
 	err := inst.checkArch(appName, version, file.Filename, archType, productType)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
