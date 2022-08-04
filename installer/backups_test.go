@@ -10,10 +10,15 @@ import (
 This is for taking backups on an edge device
 */
 
+func Test_readZip(t *testing.T) {
+	readZip("/home/aidan/backup/full/testDevice1234-full-backup-2022-08-05 06:30:05.zip")
+
+}
+
 func Test_BackupApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	back, err := app.BackupApp(appName, "testDevice1234")
 	fmt.Println(err)
 	if err != nil {
@@ -26,7 +31,7 @@ func Test_BackupApp(t *testing.T) {
 func Test_FullBackUp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	back, err := app.FullBackUp("testDevice1234")
 	fmt.Println(err)
 	if err != nil {

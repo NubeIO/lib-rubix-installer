@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"os"
+	"strings"
 )
 
 type MessageResponse struct {
@@ -26,7 +27,6 @@ RESTORE A BACK-UPS
 
 type RestoreBackup struct {
 	AppName      string                `json:"app_name"`
-	Destination  string                `json:"destination"`
 	DeviceName   string                `json:"device_name"`
 	TakeBackup   bool                  `json:"take_backup"`
 	RebootDevice bool                  `json:"reboot_device"`
@@ -38,10 +38,9 @@ func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
 	var file = back.File
 	var takeBackup = back.TakeBackup
 	var deiceName = back.DeviceName
-	var destination = back.Destination
-	if destination == "" {
-		destination = inst.DataDir
-	}
+	var destination = "/"
+	var deleteDirName = inst.DataDir
+	var checkDirName = "data"
 	// delete the existing data dir
 	resp := &RestoreResponse{}
 	if takeBackup {
@@ -51,11 +50,11 @@ func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
 		}
 		resp.TakeBackupPath = backup
 	}
-	restore, err := inst.restoreBackup(file, destination)
+	restore, err := inst.restoreBackup(file, destination, deleteDirName, checkDirName)
 	if err != nil {
 		return nil, err
 	}
-	resp.TakeBackupPath = restore.TmpFile
+	resp.Message = fmt.Sprintf("retored backup ok from: %s", restore.UploadedFile)
 	return resp, nil
 }
 
@@ -65,8 +64,8 @@ func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error)
 	var takeBackup = back.TakeBackup
 	var appName = back.AppName
 	var deiceName = back.DeviceName
-	var destination = back.Destination
-	// delete the existing data dir
+	var checkDirName = appName
+	var deleteDirName = fmt.Sprintf("%s/%s", inst.DataDir, appName)
 	resp := &RestoreResponse{}
 	if takeBackup {
 		backup, err := inst.BackupApp(appName, deiceName)
@@ -75,26 +74,25 @@ func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error)
 		}
 		resp.TakeBackupPath = backup
 	}
-	restore, err := inst.restoreBackup(file, destination)
+	restore, err := inst.restoreBackup(file, inst.DataDir, deleteDirName, checkDirName)
 	if err != nil {
 		return nil, err
 	}
-	resp.TakeBackupPath = restore.TmpFile
+	resp.Message = fmt.Sprintf("retored backup ok from: %s", restore.UploadedFile)
 	return resp, nil
 }
 
 // Upload upload a build
-func (inst *App) restoreBackup(file *multipart.FileHeader, destination string) (*UploadResponse, error) {
+func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDirName, checkDirName string) (*UploadResponse, error) {
 	// make the dirs
 	var err error
 	if destination == "" {
 		return nil, errors.New("destination can not be empty")
 	}
-	err = inst.RmRF(destination)
-	if err != nil {
-		return nil, err
+	if deleteDirName == "" {
+		return nil, errors.New("destination can not be empty")
 	}
-	log.Infof("upload build to tmp dir:%s", destination)
+	log.Infof("restore backup delete exiting dir to destination dir:%s", deleteDirName)
 	var tmpDir string
 	if tmpDir, err = inst.MakeBackupTmpDirUpload(); err != nil {
 		return nil, err
@@ -104,8 +102,34 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination string) (
 	if err != nil {
 		return nil, err
 	}
-	_, err = fileutils.New().UnZip(zipSource, destination, os.FileMode(inst.FilePerm))
+	if checkDirName != "" { // this is a basic check to make sure the upload has a name for example of flow-framework
+		zip, err := readZip(zipSource)
+		if err != nil {
+			return nil, err
+		}
+		var hasCorrectPath bool
+		for _, name := range zip {
+			parts := strings.Split(name, "/")
+			for _, part := range parts {
+				hasCorrectPath = strings.Contains(part, checkDirName)
+				if hasCorrectPath {
+					break
+				}
+			}
+		}
+		if !hasCorrectPath {
+			return nil, errors.New(fmt.Sprintf("no mathcing path name in the uploaded zip folder equal to:%s", checkDirName))
+		}
+	}
+	err = inst.RmRF(deleteDirName)
 	if err != nil {
+		return nil, err
+	}
+	log.Infof("restore backup unzip backup from source:%s", zipSource)
+	log.Infof("restore backup unzip backup to destination dir:%s", destination)
+	err = unzip(zipSource, destination)
+	if err != nil {
+		log.Errorf("restore backup unzip backup to dir:%s err:%s", destination, err.Error())
 		return nil, err
 	}
 	return &UploadResponse{
@@ -146,12 +170,15 @@ func (inst *App) ListBackupsByApp(appName string) ([]ListBackups, error) {
 	if err != nil {
 		return nil, err
 	}
-	return inst.listFilesAndPath(path)
+	apps, err := inst.listFilesAndPath(path)
+	return apps, err
 }
 
 type ListBackups struct {
-	BackupName  string `json:"name"`
-	PathAndName string `json:"path_and_name"`
+	Path        string `json:"path"`
+	BackupName  string `json:"name,omitempty"`
+	PathAndName string `json:"path_and_name,omitempty"`
+	Message     string `json:"message,omitempty"`
 }
 
 func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
@@ -161,8 +188,13 @@ func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
 	}
 	var dirContents []ListBackups
 	var dirContent ListBackups
+	dirContent.Path = path
 	if fileInfo.IsDir() {
 		files, err := ioutil.ReadDir(path)
+		if len(files) == 0 {
+			dirContent.Message = "no apps found"
+			dirContents = append(dirContents, dirContent)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -172,6 +204,7 @@ func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
 			dirContents = append(dirContents, dirContent)
 		}
 	}
+
 	return dirContents, nil
 }
 
@@ -187,7 +220,7 @@ func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 		resp.Message = "failed to find backup path"
 		return resp, err
 	}
-	err = inst.RmRF(path)
+	//err = inst.RmRF(path)
 	if err != nil {
 		resp.Message = fmt.Sprintf("failed to delete:%s", path)
 		return resp, err
@@ -299,8 +332,6 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 	if appName == "" {
 		return "", errors.New("app name can not be empty")
 	}
-	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
-	fmt.Println(1111, file)
 	found := inst.ConfirmAppDir(appName)
 	if !found {
 		return "", errors.New(fmt.Sprintf("failed to find app:%s", appName))

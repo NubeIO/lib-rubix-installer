@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"errors"
 	"fmt"
 	fileutils "github.com/NubeIO/lib-dirs/dirs"
 	"github.com/NubeIO/lib-systemctl-go/ctl"
@@ -81,5 +82,8 @@ func (inst *App) RmRF(path string) error {
 
 // Rm remove file
 func (inst *App) Rm(path string) error {
+	if path == "/" {
+		return errors.New("path can not be root path /")
+	}
 	return fileutils.New().Rm(path)
 }
