@@ -6,6 +6,7 @@ import (
 	fileutils "github.com/NubeIO/lib-dirs/dirs"
 	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"mime/multipart"
 	"os"
 )
@@ -118,12 +119,12 @@ LIST BACK-UPS
 */
 
 // ListFullBackups list all the backups taken for the data dir /data
-func (inst *App) ListFullBackups() ([]string, error) {
+func (inst *App) ListFullBackups() ([]ListBackups, error) {
 	path, err := inst.generateHomeFullBackupFolderName()
 	if err != nil {
 		return nil, err
 	}
-	return inst.listFiles(path)
+	return inst.listFilesAndPath(path)
 
 }
 
@@ -137,7 +138,7 @@ func (inst *App) ListAppBackupsDirs() ([]string, error) {
 }
 
 // ListBackupsByApp list all the backups taken for each app
-func (inst *App) ListBackupsByApp(appName string) ([]string, error) {
+func (inst *App) ListBackupsByApp(appName string) ([]ListBackups, error) {
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
 	}
@@ -145,7 +146,33 @@ func (inst *App) ListBackupsByApp(appName string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return inst.listFiles(path)
+	return inst.listFilesAndPath(path)
+}
+
+type ListBackups struct {
+	BackupName  string `json:"name"`
+	PathAndName string `json:"path_and_name"`
+}
+
+func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	var dirContents []ListBackups
+	var dirContent ListBackups
+	if fileInfo.IsDir() {
+		files, err := ioutil.ReadDir(path)
+		if err != nil {
+			return nil, err
+		}
+		for _, file := range files {
+			dirContent.BackupName = file.Name()
+			dirContent.PathAndName = fmt.Sprintf("%s/%s", path, file.Name())
+			dirContents = append(dirContents, dirContent)
+		}
+	}
+	return dirContents, nil
 }
 
 /*
@@ -313,11 +340,7 @@ func (inst *App) MakeBackupTmpDirUpload() (string, error) {
 
 // backUpHome backup home dir /user/home/backup
 func (inst *App) backUpHome() (string, error) {
-	//home, err := fileutils.Dir()
-	home := "/home/aidan"
-	path := fmt.Sprintf("%s/backup", home)
-	//path := fmt.Sprintf("%s/backup", home)
-	return path, nil
+	return inst.BackupsDir, nil
 }
 
 // backUpHome backup home dir /user/home/backup/apps

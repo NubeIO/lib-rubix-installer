@@ -15,8 +15,7 @@ var libSystemPath = "/lib/systemd"
 var etcSystemPath = "/etc/systemd"
 
 type App struct {
-	Name string `json:"name"` // rubix-wires
-	//AppBuildName     string `json:"app_build_name"`     // wires-builds
+	Name             string `json:"name"`               // rubix-wires
 	Version          string `json:"version"`            // v1.1.1
 	DataDir          string `json:"data_dir"`           // /data
 	HostDownloadPath string `json:"host_download_path"` // home/user/downloads
@@ -30,6 +29,7 @@ type App struct {
 	DefaultTimeout   int    `json:"default_timeout"`
 	AppsInstallDir   string `json:"apps_install_dir"`
 	AppsDownloadDir  string `json:"apps_download_dir"`
+	BackupsDir       string `json:"backups_dir"`
 }
 
 func New(app *App) *App {
@@ -70,6 +70,9 @@ func New(app *App) *App {
 	}
 	if app.TmpDir == "" {
 		app.TmpDir = "/data/tmp"
+	}
+	if app.BackupsDir == "" {
+		app.BackupsDir = fmt.Sprintf("%s/backup", homeDir)
 	}
 	return app
 }

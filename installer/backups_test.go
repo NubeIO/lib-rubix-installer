@@ -2,6 +2,7 @@ package installer
 
 import (
 	"fmt"
+	pprint "github.com/NubeIO/lib-rubix-installer/print"
 	"testing"
 )
 
@@ -37,7 +38,7 @@ func Test_FullBackUp(t *testing.T) {
 func TestApp_ListFullBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListFullBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -46,7 +47,7 @@ func TestApp_ListFullBackups(t *testing.T) {
 func TestApp_ListAppBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListAppBackupsDirs()
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -55,7 +56,7 @@ func TestApp_ListAppBackups(t *testing.T) {
 func TestApp_ListBackupsByApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListBackupsByApp(appName)
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -64,7 +65,7 @@ func TestApp_ListBackupsByApp(t *testing.T) {
 func TestApp_DeleteAllBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.WipeBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -73,7 +74,7 @@ func TestApp_DeleteAllBackups(t *testing.T) {
 func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.DeleteAppAllBackUpByName(appName)
 	fmt.Println(err)
 	if err != nil {
@@ -86,18 +87,15 @@ func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
 func TestApp_DeleteAppBackUp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: nonRoot, BackupsDir: "/home/aidan/backup"})
 	byApp, err := app.ListBackupsByApp(appName)
 	fmt.Println(err)
 	if err != nil {
 		return
 	}
-	for i, folder := range byApp {
-		fmt.Println(i, folder)
-		if i == 0 {
-			backs, err := app.DeleteAppOneBackUpByName(appName, folder)
-			fmt.Println(err)
-			fmt.Println(backs)
-		}
+	if byApp == nil {
+
 	}
+	pprint.PrintJOSN(byApp)
+
 }
