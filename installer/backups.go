@@ -15,7 +15,7 @@ type MessageResponse struct {
 }
 
 type RestoreResponse struct {
-	Message        string `json:"message"`
+	Message        string `json:"message,omitempty"`
 	TakeBackupPath string `json:"take_backup_path,omitempty"`
 }
 
@@ -65,9 +65,6 @@ func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error)
 	var appName = back.AppName
 	var deiceName = back.DeviceName
 	var destination = back.Destination
-	if destination == "" {
-		destination = inst.DataDir
-	}
 	// delete the existing data dir
 	resp := &RestoreResponse{}
 	if takeBackup {
@@ -96,19 +93,22 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination string) (
 	if err != nil {
 		return nil, err
 	}
+	log.Infof("upload build to tmp dir:%s", destination)
 	var tmpDir string
 	if tmpDir, err = inst.MakeBackupTmpDirUpload(); err != nil {
 		return nil, err
 	}
-	log.Infof("upload build to tmp dir:%s", tmpDir)
 	// save app in tmp dir
 	zipSource, err := inst.SaveUploadedFile(file, tmpDir)
 	if err != nil {
 		return nil, err
 	}
+	_, err = fileutils.New().UnZip(zipSource, destination, os.FileMode(inst.FilePerm))
+	if err != nil {
+		return nil, err
+	}
 	return &UploadResponse{
 		FileName:     file.Filename,
-		TmpFile:      tmpDir,
 		UploadedFile: zipSource,
 	}, err
 }
@@ -269,6 +269,11 @@ func (inst *App) FullBackUp(deiceName ...string) (string, error) {
 
 // BackupApp backup an app  /data/backups/apps/appName/appName-version-2022-07-31 12:02:01
 func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) {
+	if appName == "" {
+		return "", errors.New("app name can not be empty")
+	}
+	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
+	fmt.Println(1111, file)
 	found := inst.ConfirmAppDir(appName)
 	if !found {
 		return "", errors.New(fmt.Sprintf("failed to find app:%s", appName))
@@ -308,9 +313,11 @@ func (inst *App) MakeBackupTmpDirUpload() (string, error) {
 
 // backUpHome backup home dir /user/home/backup
 func (inst *App) backUpHome() (string, error) {
-	home, err := fileutils.Dir()
+	//home, err := fileutils.Dir()
+	home := "/home/aidan"
 	path := fmt.Sprintf("%s/backup", home)
-	return path, err
+	//path := fmt.Sprintf("%s/backup", home)
+	return path, nil
 }
 
 // backUpHome backup home dir /user/home/backup/apps

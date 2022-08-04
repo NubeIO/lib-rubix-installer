@@ -154,6 +154,7 @@ func (inst *App) unZip(source, destination string) ([]string, error) {
 // returns the filename and path as a string and any error
 func (inst *App) SaveUploadedFile(file *multipart.FileHeader, dest string) (destination string, err error) {
 	destination = fmt.Sprintf("%s/%s", dest, file.Filename)
+	fmt.Println("SaveUploadedFile dest", destination)
 	destination = filePath(destination)
 	src, err := file.Open()
 	if err != nil {
