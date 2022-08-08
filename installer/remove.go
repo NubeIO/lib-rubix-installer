@@ -12,6 +12,7 @@ type RemoveRes struct {
 	DeleteAppDir         string `json:"delete_app_dir"`
 	DeleteAppInstallDir  string `json:"delete_app_install_dir"`
 	ServiceWasInstalled  string `json:"service_was_installed"`
+	RemoveServiceErr     string `json:"remove_service_err,omitempty"`
 	Stop                 bool   `json:"stop"`
 	Disable              bool   `json:"disable"`
 	DaemonReload         bool   `json:"daemon_reload"`
@@ -26,14 +27,13 @@ type RemoveRes struct {
 - remove service file
 */
 
-// UninstallService
-//	- service nubeio-flow-framework
-func (inst *App) UninstallService(appName, service string, deleteApp bool) (*RemoveRes, error) {
-	ser := ctl.New(service, "")
-	ser.InstallOpts = ctl.InstallOpts{
+// UninstallApp full removal of an app, including removing the linux service
+func (inst *App) UninstallApp(appName, serviceName string, deleteApp bool) (*RemoveRes, error) {
+	service := ctl.New(serviceName, "")
+	service.InstallOpts = ctl.InstallOpts{
 		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
 	}
-	remove, _ := ser.Remove()
+	remove, err := service.Remove()
 	resp := &RemoveRes{
 		ServiceWasInstalled:  remove.ServiceWasInstalled,
 		Stop:                 remove.Stop,
@@ -43,6 +43,11 @@ func (inst *App) UninstallService(appName, service string, deleteApp bool) (*Rem
 		DeleteServiceFile:    remove.DeleteServiceFile,
 		DeleteServiceFileUsr: remove.DeleteServiceFileUsr,
 	}
+	if err != nil {
+		resp.RemoveServiceErr = err.Error()
+		err = nil
+	}
+
 	if deleteApp {
 		err := inst.RemoveApp(appName)
 		var removeApp = "removed app from data dir ok"
@@ -77,6 +82,9 @@ func (inst *App) RemoveAppInstall(appName string) error {
 
 // RmRF remove file and all files inside
 func (inst *App) RmRF(path string) error {
+	if path == "/" {
+		return errors.New("path can not be root path /")
+	}
 	return fileutils.New().RmRF(path)
 }
 

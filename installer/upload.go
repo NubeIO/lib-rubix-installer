@@ -25,7 +25,7 @@ type UploadResponse struct {
 	UploadedFile string `json:"uploaded_file"`
 }
 
-func (inst *App) checkArch(appName, version, buildZipName, archType, productType string) error {
+func (inst *App) checkArch(buildZipName, productType string) error {
 	check := inst.GetZipBuildDetails(buildZipName)
 	productInfo, err := inst.GetProduct() // same api as 0.0.0.0:1661/api/system/product check the arch type
 	if err != nil {
@@ -64,7 +64,7 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if productType == "" {
 		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
-	err := inst.checkArch(appName, version, file.Filename, archType, productType)
+	err := inst.checkArch(file.Filename, productType)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
 	}

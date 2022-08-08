@@ -50,7 +50,7 @@ func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
 		}
 		resp.TakeBackupPath = backup
 	}
-	restore, err := inst.restoreBackup(file, destination, deleteDirName, checkDirName)
+	restore, err := inst.restoreBackup(file, destination, deleteDirName, checkDirName, "")
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,11 @@ func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error)
 		}
 		resp.TakeBackupPath = backup
 	}
-	restore, err := inst.restoreBackup(file, inst.DataDir, deleteDirName, checkDirName)
+	version := inst.GetAppVersion(appName)
+	if version == "" {
+		return nil, errors.New("app version was not found")
+	}
+	restore, err := inst.restoreBackup(file, inst.DataDir, deleteDirName, checkDirName, version)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +87,7 @@ func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error)
 }
 
 // Upload upload a build
-func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDirName, checkDirName string) (*UploadResponse, error) {
+func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDirName, checkDirName, appVersion string) (*UploadResponse, error) {
 	// make the dirs
 	var err error
 	if destination == "" {
@@ -120,6 +124,17 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 		if !hasCorrectPath {
 			return nil, errors.New(fmt.Sprintf("no mathcing path name in the uploaded zip folder equal to:%s", checkDirName))
 		}
+	}
+	if appVersion != "" {
+		parts := strings.Split(zipSource, "/")
+		for _, part := range parts {
+			fmt.Println(strings.Contains(part, ".zip"), part)
+			if strings.Contains(part, ".zip") {
+
+			}
+		}
+
+		fmt.Println(parts)
 	}
 	err = inst.RmRF(deleteDirName)
 	if err != nil {
