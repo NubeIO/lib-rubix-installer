@@ -10,7 +10,7 @@ import (
 type Product struct {
 	EdgeVersion  string `json:"edge_version"`
 	FlowVersion  string `json:"flow_version"`
-	ImageVersion string `json:"version"`
+	ImageVersion string `json:"image_version"`
 	Product      string `json:"product"` // RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc
 	Arch         string `json:"arch"`    // armv7 amd64
 	OS           OS     `json:"os"`      // Linux, Windows, Darwin
@@ -24,8 +24,10 @@ func (inst *App) GetProduct(fileAndPath ...string) (*Product, error) {
 	edgeVersion := inst.GetAppVersion("rubix-edge")
 	ffVersion := inst.GetAppVersion("flow-framework")
 	product, err := read(fileAndPath...)
-	product.EdgeVersion = edgeVersion
-	product.FlowVersion = ffVersion
+	if product != nil {
+		product.EdgeVersion = edgeVersion
+		product.FlowVersion = ffVersion
+	}
 	return product, err
 }
 

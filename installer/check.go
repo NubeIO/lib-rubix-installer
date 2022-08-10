@@ -82,6 +82,7 @@ func (inst *App) ConfirmServiceFile(serviceName string) bool {
 
 func (inst *App) GetAppVersion(appName string) string {
 	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
+	fmt.Println(file)
 	fileInfo, err := os.Stat(file)
 	if err != nil {
 		return ""
