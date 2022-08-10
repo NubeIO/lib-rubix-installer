@@ -38,7 +38,6 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 // InstallApp make all the required dirs and unzip build
 //	zip, pass in the zip folder, or you can pass in a local path to param localZip
 func (inst *App) installEdgeApp(appName, version string, source string) (*AppResponse, error) {
-
 	// make the dirs
 	err := inst.DirsInstallApp(appName, version)
 	if err != nil {
@@ -71,7 +70,7 @@ func (inst *App) installEdgeApp(appName, version string, source string) (*AppRes
 			}
 		}
 	}
-	return inst.ConfirmAppInstalled(appName, appName)
+	return inst.ConfirmAppInstalled(appName)
 
 }
 

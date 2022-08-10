@@ -5,11 +5,30 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 )
+
+func (inst *App) listFiles(file string) ([]string, error) {
+	fileInfo, err := os.Stat(file)
+	if err != nil {
+		return nil, err
+	}
+	var dirContent []string
+	if fileInfo.IsDir() {
+		files, err := ioutil.ReadDir(file)
+		if err != nil {
+			return nil, err
+		}
+		for _, file := range files {
+			dirContent = append(dirContent, file.Name())
+		}
+	}
+	return dirContent, nil
+}
 
 // timestamp *
 func timestamp() string {

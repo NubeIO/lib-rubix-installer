@@ -3,6 +3,7 @@ package installer
 import (
 	"fmt"
 	fileutils "github.com/NubeIO/lib-dirs/dirs"
+	"github.com/NubeIO/lib-systemctl-go/systemctl"
 )
 
 const nonRoot = 0700
@@ -30,6 +31,7 @@ type App struct {
 	AppsInstallDir   string `json:"apps_install_dir"`
 	AppsDownloadDir  string `json:"apps_download_dir"`
 	BackupsDir       string `json:"backups_dir"`
+	Ctl              *systemctl.Ctl
 }
 
 func New(app *App) *App {
@@ -74,5 +76,9 @@ func New(app *App) *App {
 	if app.BackupsDir == "" {
 		app.BackupsDir = fmt.Sprintf("%s/backup", homeDir)
 	}
+	app.Ctl = systemctl.New(&systemctl.Ctl{
+		UserMode: false,
+		Timeout:  30,
+	})
 	return app
 }
