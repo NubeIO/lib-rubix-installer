@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
@@ -8,10 +9,10 @@ import (
 )
 
 type BuildDetails struct {
-	MatchedName    string `json:"matched_name"`
-	MatchedVersion string `json:"matched_version"`
-	MatchedArch    string `json:"matched_arch"`
-	ZipName        string `json:"zip_name"`
+	MatchedName    string `json:"name,omitempty"`
+	MatchedVersion string `json:"version,omitempty"`
+	MatchedArch    string `json:"arch,omitempty"`
+	ZipName        string `json:"zip_name,omitempty"`
 }
 
 func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
@@ -47,6 +48,21 @@ func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
 		}
 	}
 	name = strings.Join(parts[0:count], "-")
+
+	if (len(zipName) >= 1) && (len(zipName) <= 7) { // this logic is here as some apps like wires dont have the name of the app in the zip name (eg FF is like :flow-framework-0.6.1-6cfec278.amd64.zip & wires is :v2.0.5)
+		p := strings.Split(zipName, ".")
+		if len(p) > 2 {
+			nameAsVersion := p[0]
+			if strings.Contains(nameAsVersion, "v") {
+				if !strings.Contains(nameAsVersion, ".zip") {
+					version = zipName // make the zip name the version
+				}
+			}
+		}
+	}
+	if !strings.Contains(version, "v") {
+		version = fmt.Sprintf("v%s", version)
+	}
 	return &BuildDetails{
 		MatchedName:    name,
 		MatchedVersion: version,
@@ -56,7 +72,7 @@ func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
 }
 
 // GetBuildZipNameByArch // get a build by its arch
-func (inst *App) GetBuildZipNameByArch(path, arch string) (*BuildDetails, error) {
+func (inst *App) GetBuildZipNameByArch(path, arch string, dontCheckArch bool) (*BuildDetails, error) {
 	var out *BuildDetails
 	details, err := getFileDetails(path)
 	if err != nil {
@@ -65,6 +81,9 @@ func (inst *App) GetBuildZipNameByArch(path, arch string) (*BuildDetails, error)
 	for _, name := range details {
 		app := inst.GetZipBuildDetails(name.Name)
 		if app.MatchedArch == arch {
+			out = app
+		}
+		if dontCheckArch { // most likely rubix-wires as it has no arch
 			out = app
 		}
 	}
