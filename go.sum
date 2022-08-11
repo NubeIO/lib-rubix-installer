@@ -1,5 +1,6 @@
-github.com/NubeIO/lib-dirs v0.0.2 h1:8mdDMNpNgmcyXBSllyNdeN/5bgCJ7LssaRqg8N2YVC4=
 github.com/NubeIO/lib-dirs v0.0.2/go.mod h1:PCDWQm82Nezp9oyhkpqyfVH6w6+1lzfDwfRdYVF5sPY=
+github.com/NubeIO/lib-dirs v0.0.3 h1:nR83YVnm8YZmoZji2xaTJdt5P9ilMEa9KSlOv7QuFDk=
+github.com/NubeIO/lib-dirs v0.0.3/go.mod h1:ay8NFXTWwtnNdE/JN9ZK5626CVq7UpjEeoQ2Ze6FE3U=
 github.com/NubeIO/lib-systemctl-go v0.0.7 h1:RAy33wWP1crVysN5aYZqpbh1ehLFLdnH/0YjUTkH8Eo=
 github.com/NubeIO/lib-systemctl-go v0.0.7/go.mod h1:gpVy2jcgc8AiCBf3k+sSDwDoxYtdNzd3hEeK3ygJz+c=
 github.com/NubeIO/lib-uuid v0.0.2 h1:6Ihw3jvg5aEGIXJXFmRozfWK4+Szo96lbdCv6gFIqRs=

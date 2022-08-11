@@ -35,7 +35,7 @@ type App struct {
 }
 
 func New(app *App) *App {
-	homeDir, _ := fileutils.Dir()
+	homeDir, _ := fileutils.HomeDir()
 	if app == nil {
 		app = &App{}
 	}
