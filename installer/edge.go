@@ -148,7 +148,7 @@ func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 		return nil, err
 	}
 	if serviceName == "" {
-		return nil, errors.New("app service name was not found")
+		serviceName = fmt.Sprintf("nubeio-%s.service", appName)
 	}
 	version := inst.GetAppVersion(appName)
 	if version == "" {
