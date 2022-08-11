@@ -68,11 +68,21 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
 	}
-	resp, err := inst.Upload(file)
+	resp, err := inst.Upload(file) // save app in tmp dir
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app unzip err:%s", err.Error()))
 	}
-
+	serviceFile, err := inst.GetNubeServiceFileName(appName)
+	if err != nil {
+		serviceFile = fmt.Sprintf("nubeio-%s.service", appName)
+	}
+	log.Infof("try and stop service:%s", serviceFile)
+	action, err := inst.Ctl.CtlAction("stop", serviceFile, inst.DefaultTimeout)
+	if action.Ok {
+		log.Infof("failed to stop service:%s", serviceFile)
+	} else {
+		log.Infof("was able to stop service:%s", serviceFile)
+	}
 	installApp, err := inst.InstallEdgeApp(&Install{
 		Name:    app.Name,
 		Version: app.Version,
@@ -96,9 +106,7 @@ func (inst *App) Upload(zip *multipart.FileHeader) (*UploadResponse, error) {
 		return nil, err
 	}
 	log.Infof("upload build to tmp dir:%s", tmpDir)
-
-	// save app in tmp dir
-	zipSource, err := inst.SaveUploadedFile(zip, tmpDir)
+	zipSource, err := inst.SaveUploadedFile(zip, tmpDir) // save app in tmp dir
 	if err != nil {
 		return nil, err
 	}
