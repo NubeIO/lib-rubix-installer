@@ -25,7 +25,7 @@ func (inst *App) CtlAction(body *CtlBody) (*systemctl.SystemResponse, error) {
 	return inst.Ctl.CtlAction(body.Action, body.Service, body.Timeout)
 }
 
-func (inst *App) CtlStatus(body *CtlBody) (*systemctl.SystemResponseChecks, error) {
+func (inst *App) CtlStatus(body *CtlBody) (*systemctl.SystemState, error) {
 	if body.AppName != "" {
 		name, err := inst.GetNubeServiceFileName(body.AppName)
 		if err != nil {
@@ -33,7 +33,8 @@ func (inst *App) CtlStatus(body *CtlBody) (*systemctl.SystemResponseChecks, erro
 		}
 		body.Service = name
 	}
-	return inst.Ctl.CtlStatus(body.Action, body.Service, body.Timeout)
+	resp, err := inst.Ctl.ServiceState(body.Service, body.Timeout)
+	return &resp, err
 }
 
 func (inst *App) ServiceMassAction(body *CtlBody) ([]systemctl.MassSystemResponse, error) {
@@ -52,7 +53,7 @@ func (inst *App) ServiceMassAction(body *CtlBody) ([]systemctl.MassSystemRespons
 	return inst.Ctl.ServiceMassAction(body.ServiceNames, body.Action, body.Timeout)
 }
 
-func (inst *App) ServiceMassStatus(body *CtlBody) ([]systemctl.MassSystemResponseChecks, error) {
+func (inst *App) ServiceMassStatus(body *CtlBody) ([]systemctl.SystemState, error) {
 	if len(body.AppNames) > 0 {
 		for _, name := range body.AppNames {
 			serviceName, err := inst.GetNubeServiceFileName(name)
@@ -65,5 +66,5 @@ func (inst *App) ServiceMassStatus(body *CtlBody) ([]systemctl.MassSystemRespons
 	if len(body.ServiceNames) == 0 {
 		return nil, errors.New("no services names provided")
 	}
-	return inst.Ctl.ServiceMassStatus(body.ServiceNames, body.Action, body.Timeout)
+	return inst.Ctl.ServiceStateMass(body.ServiceNames, body.Timeout)
 }
