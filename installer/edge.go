@@ -12,13 +12,10 @@ import (
 )
 
 type AppResponse struct {
-	Name        string                 `json:"app"`
-	Version     string                 `json:"version,omitempty"`
-	IsInstalled bool                   `json:"is_installed"`
-	IsEnabled   bool                   `json:"is_enabled"`
-	IsActive    bool                   `json:"is_active"`
-	AppStatus   *systemctl.SystemState `json:"app_status,omitempty"`
-	Error       string                 `json:"error,omitempty"`
+	Name      string                 `json:"app"`
+	Version   string                 `json:"version,omitempty"`
+	AppStatus *systemctl.SystemState `json:"app_status,omitempty"`
+	Error     string                 `json:"error,omitempty"`
 }
 
 var systemOpts = systemctl.Options{
@@ -143,30 +140,18 @@ func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
 	}
-	serviceName, err := inst.GetNubeServiceFileName(appName)
-	if err != nil {
-		return nil, err
-	}
-	if serviceName == "" {
-		serviceName = fmt.Sprintf("nubeio-%s.service", appName)
-	}
 	version := inst.GetAppVersion(appName)
 	if version == "" {
 		return nil, errors.New("failed to find app version")
 	}
-	ctl := systemctl.New(&systemctl.Ctl{
-		UserMode: false,
-		Timeout:  defaultTimeout,
-	})
-	installed, err := ctl.IsInstalled(serviceName, systemOpts)
-	enabled, err := ctl.IsEnabled(serviceName, systemOpts)
-	active, _, err := ctl.IsActive(serviceName, systemOpts)
+	state, err := inst.CtlStatus(&CtlBody{AppName: appName})
+	if err != nil {
+		return nil, err
+	}
 	return &AppResponse{
-		Name:        appName,
-		Version:     version,
-		IsInstalled: installed,
-		IsEnabled:   enabled,
-		IsActive:    active,
+		Name:      appName,
+		Version:   version,
+		AppStatus: state,
 	}, err
 }
 

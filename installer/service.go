@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func (inst *App) SetServiceFileName(appName string) string {
+	return fmt.Sprintf("nubeio-%s.service", appName)
+}
+
 func (inst *App) setServiceFileName(appName string) string {
 	return fmt.Sprintf("nubeio-%s.service", appName)
 }

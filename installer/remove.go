@@ -27,7 +27,8 @@ type RemoveRes struct {
 */
 
 // UninstallApp full removal of an app, including removing the linux service
-func (inst *App) UninstallApp(appName, serviceName string, deleteApp bool) (*RemoveRes, error) {
+func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error) {
+	serviceName := inst.setServiceFileName(appName)
 	service := ctl.New(serviceName, "")
 	service.InstallOpts = ctl.InstallOpts{
 		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
