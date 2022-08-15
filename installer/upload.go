@@ -78,8 +78,12 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	}
 	log.Infof("try and stop service:%s", serviceFile)
 	action, err := inst.Ctl.CtlAction("stop", serviceFile, inst.DefaultTimeout)
-	if action.Ok {
-		log.Infof("failed to stop service:%s", serviceFile)
+	if action != nil {
+		if action.Ok {
+			log.Infof("failed to stop service:%s", serviceFile)
+		} else {
+			log.Infof("was able to stop service:%s", serviceFile)
+		}
 	} else {
 		log.Infof("was able to stop service:%s", serviceFile)
 	}

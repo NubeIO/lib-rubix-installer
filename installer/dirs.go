@@ -30,6 +30,11 @@ func (inst *App) DirsInstallApp(appName, version string) error {
 	if err != nil {
 		return err
 	}
+	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppPath(appName)), os.FileMode(filePerm)) // make the app config dir
+	log.Infof("install app edge: MakeAppDir app:%s", appName)
+	if err != nil {
+		return err
+	}
 	err = inst.MakeAppInstallDir(appName)
 	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s", appName)
 	if err != nil {
