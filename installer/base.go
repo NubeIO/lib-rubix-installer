@@ -28,7 +28,8 @@ type App struct {
 	LibSystemPath    string `json:"lib_system_path"` // /lib/systemd/
 	EtcSystemPath    string `json:"etc_system_path"` // /etc/systemd/
 	DefaultTimeout   int    `json:"default_timeout"`
-	AppsInstallDir   string `json:"apps_install_dir"`
+	RubixServiceDir  string `json:"rubix_service_dir"`
+	AppsInstallDir   string `json:"apps_install_dir"` // /rubix-service/apps/install
 	AppsDownloadDir  string `json:"apps_download_dir"`
 	BackupsDir       string `json:"backups_dir"`
 	Ctl              *systemctl.Ctl
@@ -63,6 +64,12 @@ func New(app *App) *App {
 	}
 	if app.HostDownloadPath == "" {
 		app.HostDownloadPath = filePath(fmt.Sprintf("%s/Downloads", homeDir))
+	}
+	if app.RubixServiceDir == "" {
+		app.RubixServiceDir = filePath(fmt.Sprintf("%s/rubix-service", app.DataDir))
+	}
+	if app.AppsDownloadDir == "" {
+		app.AppsDownloadDir = filePath(fmt.Sprintf("%s/rubix-service/apps/download", app.DataDir))
 	}
 	if app.AppsInstallDir == "" {
 		app.AppsInstallDir = filePath(fmt.Sprintf("%s/rubix-service/apps/install", app.DataDir))

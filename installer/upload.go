@@ -64,9 +64,12 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if productType == "" {
 		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
-	err := inst.CompareBuildToArch(file.Filename, productType)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
+	if app.Name == "rubix-wires" { // wires don't care about the arch
+	} else {
+		err := inst.CompareBuildToArch(file.Filename, productType)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
+		}
 	}
 	resp, err := inst.Upload(file) // save app in tmp dir
 	if err != nil {
@@ -77,7 +80,7 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 		serviceFile = fmt.Sprintf("nubeio-%s.service", appName)
 	}
 	log.Infof("try and stop service:%s", serviceFile)
-	action, err := inst.Ctl.CtlAction("stop", serviceFile, inst.DefaultTimeout)
+	action, err := inst.Ctl.CtlAction("stop", serviceFile, inst.DefaultTimeout) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
 	if action != nil {
 		if action.Ok {
 			log.Infof("failed to stop service:%s", serviceFile)

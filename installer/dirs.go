@@ -133,7 +133,18 @@ func (inst *App) MakeInstallDir() error {
 	if inst.AppsInstallDir == "" {
 		return errors.New("MakeDataDir path can not be empty")
 	}
-	return mkdirAll(inst.AppsInstallDir, os.FileMode(inst.FilePerm))
+	rsDir := fmt.Sprintf("%s/data", inst.RubixServiceDir)
+	err := mkdirAll(rsDir, os.FileMode(inst.FilePerm))
+	if err != nil {
+		log.Errorf("error on making rubix-service dir %s", err.Error())
+		return err
+	}
+	err = mkdirAll(inst.AppsInstallDir, os.FileMode(inst.FilePerm))
+	if err != nil {
+		log.Errorf("error on making rubix-service app install dir %s", err.Error())
+		return err
+	}
+	return err
 }
 
 //MakeDownloadDir  => /user/home/download
