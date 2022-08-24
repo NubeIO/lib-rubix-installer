@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"os"
 	"strings"
 )
 
@@ -64,6 +65,7 @@ func (inst *App) installEdgeApp(appName, version string, source string) (*AppRes
 			log.Infof("RENAME BUILD-NEW %s", newFile)
 			if knownBuildNames(file) {
 				err = inst.MoveFile(existingFile, newFile, true) // rename the build
+				os.Chmod(newFile, os.FileMode(inst.FilePerm))
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("install edge app rename file err:%s", err.Error()))
 				}
