@@ -182,5 +182,9 @@ func (inst *App) SaveUploadedFile(file *multipart.FileHeader, dest string) (dest
 	}
 	defer out.Close()
 	_, err = io.Copy(out, src)
+	err = os.Chmod(destination, os.FileMode(inst.FilePerm))
+	if err != nil {
+		return destination, err
+	}
 	return destination, err
 }
