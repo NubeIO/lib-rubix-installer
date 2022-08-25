@@ -42,6 +42,7 @@ func (inst *App) ListApps() ([]Apps, error) {
 		app.Name = file.Name()
 		app.Version = inst.GetAppVersion(app.Name)
 		app.Path = fmt.Sprintf("%s/apps/%s", rootDir, file.Name())
+		app.Name = setWiresBuildName(app.Name)
 		apps = append(apps, app)
 	}
 	return apps, err
@@ -160,9 +161,7 @@ func (inst *App) ConfirmAppDir(appName string) bool {
 }
 
 func (inst *App) ConfirmAppInstallDir(appName string) bool {
-	if appName == "rubix-wires" {
-		appName = "wires-builds"
-	}
+	appName = setWiresName(appName)
 	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
 }
 
@@ -191,9 +190,7 @@ func (inst *App) ConfirmServiceFile(serviceName string) bool {
 }
 
 func (inst *App) GetAppVersion(appName string) string {
-	if appName == "rubix-wires" {
-		appName = "wires-builds"
-	}
+	appName = setWiresName(appName)
 	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
 	fileInfo, err := os.Stat(file)
 	if err != nil {
