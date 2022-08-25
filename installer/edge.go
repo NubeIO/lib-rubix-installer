@@ -160,6 +160,9 @@ func (inst *App) ConfirmAppDir(appName string) bool {
 }
 
 func (inst *App) ConfirmAppInstallDir(appName string) bool {
+	if appName == "rubix-wires" {
+		appName = "wires-builds"
+	}
 	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
 }
 
@@ -188,6 +191,9 @@ func (inst *App) ConfirmServiceFile(serviceName string) bool {
 }
 
 func (inst *App) GetAppVersion(appName string) string {
+	if appName == "rubix-wires" {
+		appName = "wires-builds"
+	}
 	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
 	fileInfo, err := os.Stat(file)
 	if err != nil {

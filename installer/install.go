@@ -53,27 +53,29 @@ func (inst *App) installEdgeApp(appName, version string, source string) (*AppRes
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("install edge app unzip err:%s", err.Error()))
 	}
-	files, err := inst.listFiles(dest)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("install edge app list files err:%s", err.Error()))
-	}
-	if len(files) > 0 {
-		for _, file := range files {
-			existingFile := fmt.Sprintf("%s/%s", dest, file)
-			newFile := fmt.Sprintf("%s/app", dest)
-			log.Infof("RENAME BUILD-EXISTSING %s", existingFile)
-			log.Infof("RENAME BUILD-NEW %s", newFile)
-			if knownBuildNames(file) {
-				err = inst.MoveFile(existingFile, newFile, true) // rename the build
-				os.Chmod(newFile, os.FileMode(inst.FilePerm))
-				if err != nil {
-					return nil, errors.New(fmt.Sprintf("install edge app rename file err:%s", err.Error()))
+	if appName != "rubix-wires" {
+		files, err := inst.listFiles(dest)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("install edge app list files err:%s", err.Error()))
+		}
+		if len(files) > 0 {
+			for _, file := range files {
+				existingFile := fmt.Sprintf("%s/%s", dest, file)
+				newFile := fmt.Sprintf("%s/app", dest)
+				log.Infof("RENAME BUILD-EXISTSING %s", existingFile)
+				log.Infof("RENAME BUILD-NEW %s", newFile)
+				if knownBuildNames(file) {
+					err = inst.MoveFile(existingFile, newFile, true) // rename the build
+					os.Chmod(newFile, os.FileMode(inst.FilePerm))
+					if err != nil {
+						return nil, errors.New(fmt.Sprintf("install edge app rename file err:%s", err.Error()))
+					}
 				}
 			}
 		}
 	}
-	return inst.ConfirmAppInstalled(appName)
 
+	return inst.ConfirmAppInstalled(appName)
 }
 
 func knownBuildNames(file string) bool {

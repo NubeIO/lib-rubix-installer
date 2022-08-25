@@ -42,10 +42,6 @@ func (inst *App) InstallService(app *Install) (*InstallResp, error) {
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no app install dir found for provided app:%s", app.Name))
 	}
-	found = inst.ConfirmAppInstallDir(app.Name)
-	if !found {
-		return nil, errors.New(fmt.Sprintf("no app install dir found for provided app:%s", app.Name))
-	}
 	return inst.installService(serviceName, serviceFilePath)
 }
 
