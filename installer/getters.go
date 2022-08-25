@@ -32,14 +32,18 @@ func filePath(path string, debug ...bool) string {
 	return filepath.FromSlash(updated)
 }
 
-// GetAppPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
+// GetAppPath get the full app install path => /data/rubix-wires
 func (inst *App) GetAppPath(appName string) string {
 	return inst.getAppPath(appName)
 }
 
-// GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
+// GetAppConfigPath get the full app path =>  /data/rubix-wires
+func (inst *App) GetAppConfigPath(appName string) string {
+	return filePath(fmt.Sprintf("%s/%s/config", inst.DataDir, appName))
+}
+
+// GetAppInstallPath get the full app install path and version => /data/rubix-wires
 func (inst *App) getAppPath(appName string) string {
-	appName = setWiresName(appName)
 	return filePath(fmt.Sprintf("%s/%s", inst.DataDir, appName))
 }
 
