@@ -38,9 +38,16 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 
 // InstallApp make all the required dirs and unzip build
 //	zip, pass in the zip folder, or you can pass in a local path to param localZip
-func (inst *App) installEdgeApp(appName, version string, source string) (*AppResponse, error) {
+func (inst *App) installEdgeApp(appName, version, source string) (*AppResponse, error) {
+
+	log.Infof("remove existing app from the install dir before the install is started")
+	err := inst.RemoveAppInstall(appName)
+	if err != nil {
+		log.Errorf("remove app install dir:%s", err.Error())
+	}
+
 	// make the dirs
-	err := inst.DirsInstallApp(appName, version)
+	err = inst.DirsInstallApp(appName, version)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("install edge app make dirs:%s", err.Error()))
 	}
