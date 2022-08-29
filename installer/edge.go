@@ -16,6 +16,7 @@ type AppResponse struct {
 	Version   string                 `json:"version,omitempty"`
 	AppStatus *systemctl.SystemState `json:"app_status,omitempty"`
 	Error     string                 `json:"error,omitempty"`
+	RemoveRes *RemoveRes             `json:"remove_res"`
 }
 
 var systemOpts = systemctl.Options{

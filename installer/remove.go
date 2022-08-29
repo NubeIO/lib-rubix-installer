@@ -47,25 +47,23 @@ func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error
 		resp.RemoveServiceErr = err.Error()
 		err = nil
 	}
-
-	if deleteApp {
+	var removeAppInstall = "removed app from install dir ok"
+	err = inst.RemoveAppInstall(appName)
+	if err != nil {
+		resp.Error = err.Error()
+		removeAppInstall = fmt.Sprintf("failed to delete app from install dir")
+	}
+	resp.DeleteAppInstallDir = removeAppInstall
+	if deleteApp { //delete app from app install dir
 		err := inst.RemoveApp(appName)
 		var removeApp = "removed app from data dir ok"
-		var removeAppInstall = "removed app from install dir ok"
 		if err != nil {
 			resp.Error = err.Error()
 			removeApp = fmt.Sprintf("failed to delete app from data dir")
 		}
-		err = inst.RemoveAppInstall(appName)
-		if err != nil {
-			resp.Error = err.Error()
-			removeAppInstall = fmt.Sprintf("failed to delete app from install dir")
-		}
 		resp.DeleteAppDir = removeApp
-		resp.DeleteAppInstallDir = removeAppInstall
 	} else {
 		resp.DeleteAppDir = "app was not deleted"
-		resp.DeleteAppInstallDir = "app install dir was not deleted"
 	}
 	return resp, nil
 }

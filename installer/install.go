@@ -9,10 +9,11 @@ import (
 )
 
 type Install struct {
-	Name        string `json:"name"`
-	Version     string `json:"version"`
-	ServiceName string `json:"service_name"`
-	Source      string `json:"source"`
+	Name         string `json:"name"`
+	Version      string `json:"version"`
+	ServiceName  string `json:"service_name"`
+	Source       string `json:"source"`
+	DeleteAppDir bool   `json:"delete_app_dir"` // this will delete for example the db, plugins and config
 }
 
 type Response struct {
@@ -21,6 +22,9 @@ type Response struct {
 }
 
 func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
+	if app == nil {
+		return nil, errors.New("app install body can not be empty")
+	}
 	var appName = app.Name
 	var version = app.Version
 	var source = app.Source
@@ -33,19 +37,17 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	if source == "" {
 		return nil, errors.New("app build source can not be empty, try: /data/tmp/tmp_1223/flow-framework.zip")
 	}
-	return inst.installEdgeApp(appName, version, source)
+	return inst.installEdgeApp(appName, version, source, app.DeleteAppDir)
 }
 
 // InstallApp make all the required dirs and unzip build
 //	zip, pass in the zip folder, or you can pass in a local path to param localZip
-func (inst *App) installEdgeApp(appName, version, source string) (*AppResponse, error) {
-
+func (inst *App) installEdgeApp(appName, version, source string, deleteApp bool) (*AppResponse, error) {
 	log.Infof("remove existing app from the install dir before the install is started")
-	err := inst.RemoveAppInstall(appName)
+	uninstallApp, err := inst.UninstallApp(appName, deleteApp)
 	if err != nil {
 		log.Errorf("remove app install dir:%s", err.Error())
 	}
-
 	// make the dirs
 	err = inst.DirsInstallApp(appName, version)
 	if err != nil {
@@ -82,7 +84,14 @@ func (inst *App) installEdgeApp(appName, version, source string) (*AppResponse, 
 		}
 	}
 
-	return inst.ConfirmAppInstalled(appName)
+	installed, err := inst.ConfirmAppInstalled(appName)
+	if err != nil {
+		return nil, err
+	}
+	if installed != nil {
+		installed.RemoveRes = uninstallApp
+	}
+	return installed, err
 }
 
 func knownBuildNames(file string) bool {
