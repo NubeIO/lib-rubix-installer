@@ -60,6 +60,7 @@ func (inst *App) installEdgeApp(appName, version, source string, deleteApp bool)
 	// unzip the build to the app dir  /data/rubix-service/install/wires-build
 	_, err = inst.unZip(source, dest) // unzip the build
 	if err != nil {
+		log.Errorf("install edge app unzip source:%s dest:%s err:%s", source, dest, err.Error())
 		return nil, errors.New(fmt.Sprintf("install edge app unzip err:%s", err.Error()))
 	}
 	if appName != "rubix-wires" {
