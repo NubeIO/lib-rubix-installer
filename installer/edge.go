@@ -3,7 +3,7 @@ package installer
 import (
 	"errors"
 	"fmt"
-	fileutils "github.com/NubeIO/lib-dirs/dirs"
+	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -17,11 +17,6 @@ type AppResponse struct {
 	AppStatus *systemctl.SystemState `json:"app_status,omitempty"`
 	Error     string                 `json:"error,omitempty"`
 	RemoveRes *RemoveRes             `json:"remove_res"`
-}
-
-var systemOpts = systemctl.Options{
-	UserMode: false,
-	Timeout:  defaultTimeout,
 }
 
 type Apps struct {
@@ -62,15 +57,12 @@ func (inst *App) ListAppsAndService() ([]InstalledServices, error) {
 		if err != nil {
 			return nil, err
 		}
-		systemCtl := systemctl.New(&systemctl.Ctl{
-			UserMode: false,
-			Timeout:  defaultTimeout,
-		})
+		systemCtl := systemctl.New(false, inst.DefaultTimeout)
 		installedService.AppName = app.Name
 		installedService.ServiceName = name
-		installed, err := systemCtl.State(name, systemOpts)
+		installed, err := systemCtl.State(name)
 		if err != nil {
-			log.Errorf("service is not isntalled:%s", name)
+			log.Errorf("service is not isntalled: %s", name)
 		}
 		installedService.AppStatus = installed
 		installedServices = append(installedServices, installedService)
@@ -93,14 +85,11 @@ func (inst *App) ListNubeServices() ([]InstalledServices, error) {
 		return nil, err
 	}
 	for _, file := range files {
-		systemCtl := systemctl.New(&systemctl.Ctl{
-			UserMode: false,
-			Timeout:  defaultTimeout,
-		})
+		systemCtl := systemctl.New(false, inst.DefaultTimeout)
 		installedService.ServiceName = file
-		installed, err := systemCtl.State(file, systemOpts)
+		installed, err := systemCtl.State(file)
 		if err != nil {
-			log.Errorf("service is not isntalled:%s", file)
+			log.Errorf("service is not isntalled: %s", file)
 		}
 		installedService.AppStatus = installed
 		installedServices = append(installedServices, installedService)

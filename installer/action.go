@@ -42,5 +42,4 @@ func CheckAction(s string) error {
 		return nil
 	}
 	return errors.New("invalid action type, try start")
-
 }

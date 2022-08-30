@@ -30,7 +30,6 @@ func (inst *App) listFiles(file string) ([]string, error) {
 	return dirContent, nil
 }
 
-// timestamp *
 func timestamp() string {
 	t := time.Now().Format("2006-01-02 15:04:05")
 	return t
@@ -57,15 +56,10 @@ func readZip(src string) ([]string, error) {
 func checkZipContents(file *zip.File) (string, error) {
 	fileRead, err := file.Open()
 	if err != nil {
-		msg := "Failed to open zip %s for reading: %s"
+		msg := "failed to open zip %s for reading: %s"
 		return "", fmt.Errorf(msg, file.Name, err)
 	}
 	defer fileRead.Close()
-
-	if err != nil {
-		msg := "Failed to read zip %s for reading: %s"
-		return "", fmt.Errorf(msg, file.Name, err)
-	}
 	return file.Name, nil
 }
 
@@ -75,6 +69,7 @@ func unzip(src, dest string) error {
 		return err
 	}
 	defer r.Close()
+	// TODO: loop defer
 	for _, f := range r.File {
 		rc, err := f.Open()
 		if err != nil {

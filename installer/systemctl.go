@@ -9,7 +9,6 @@ type CtlBody struct {
 	AppName      string   `json:"app_name"`
 	Service      string   `json:"service"`
 	Action       string   `json:"action"`
-	Timeout      int      `json:"timeout"`
 	ServiceNames []string `json:"service_names"` // nubeio-flow-framework.service
 	AppNames     []string `json:"app_names"`     // flow-framework
 }
@@ -22,7 +21,7 @@ func (inst *App) CtlAction(body *CtlBody) (*systemctl.SystemResponse, error) {
 		}
 		body.Service = name
 	}
-	return inst.Ctl.CtlAction(body.Action, body.Service, body.Timeout)
+	return inst.Ctl.CtlAction(body.Action, body.Service)
 }
 
 func (inst *App) CtlStatus(body *CtlBody) (*systemctl.SystemState, error) {
@@ -33,7 +32,7 @@ func (inst *App) CtlStatus(body *CtlBody) (*systemctl.SystemState, error) {
 		}
 		body.Service = name
 	}
-	resp, err := inst.Ctl.ServiceState(body.Service, body.Timeout)
+	resp, err := inst.Ctl.ServiceState(body.Service)
 	return &resp, err
 }
 
@@ -50,7 +49,7 @@ func (inst *App) ServiceMassAction(body *CtlBody) ([]systemctl.MassSystemRespons
 	if len(body.ServiceNames) == 0 {
 		return nil, errors.New("no services names provided")
 	}
-	return inst.Ctl.ServiceMassAction(body.ServiceNames, body.Action, body.Timeout)
+	return inst.Ctl.ServiceMassAction(body.ServiceNames, body.Action)
 }
 
 func (inst *App) ServiceMassStatus(body *CtlBody) ([]systemctl.SystemState, error) {
@@ -66,5 +65,5 @@ func (inst *App) ServiceMassStatus(body *CtlBody) ([]systemctl.SystemState, erro
 	if len(body.ServiceNames) == 0 {
 		return nil, errors.New("no services names provided")
 	}
-	return inst.Ctl.ServiceStateMass(body.ServiceNames, body.Timeout)
+	return inst.Ctl.ServiceStateMass(body.ServiceNames)
 }

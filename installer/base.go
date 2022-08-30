@@ -2,15 +2,12 @@ package installer
 
 import (
 	"fmt"
-	fileutils "github.com/NubeIO/lib-dirs/dirs"
+	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
 )
 
-const nonRoot = 0700
-const root = 0777
-
-var filePerm = root
-var defaultTimeout = 30
+const filePerm = 0755
+const defaultTimeout = 30
 
 var libSystemPath = "/lib/systemd"
 var etcSystemPath = "/etc/systemd"
@@ -48,7 +45,6 @@ func New(app *App) *App {
 	}
 	if app.DefaultTimeout == 0 {
 		app.DefaultTimeout = defaultTimeout
-		defaultTimeout = app.DefaultTimeout
 	}
 	if app.LibSystemPath == "" {
 		app.LibSystemPath = libSystemPath
@@ -83,9 +79,6 @@ func New(app *App) *App {
 	if app.BackupsDir == "" {
 		app.BackupsDir = fmt.Sprintf("%s/backup", homeDir)
 	}
-	app.Ctl = systemctl.New(&systemctl.Ctl{
-		UserMode: false,
-		Timeout:  30,
-	})
+	app.Ctl = systemctl.New(false, app.DefaultTimeout)
 	return app
 }

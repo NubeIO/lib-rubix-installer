@@ -2,7 +2,7 @@ package installer
 
 import (
 	"errors"
-	"github.com/NubeIO/lib-dirs/dirs/jparse"
+	"github.com/NubeIO/lib-files/fileutils/jparse"
 	log "github.com/sirupsen/logrus"
 	"runtime"
 )
@@ -14,10 +14,6 @@ type Product struct {
 	Product      string `json:"product"` // RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc  see https://github.com/NubeIO/lib-command/blob/master/product/product.go#L7
 	Arch         string `json:"arch"`    // armv7 amd64
 	OS           OS     `json:"os"`      // Linux, Windows, Darwin
-}
-
-func GetProduct(fileAndPath ...string) (*Product, error) {
-	return read(fileAndPath...)
 }
 
 func (inst *App) GetProduct(fileAndPath ...string) (*Product, error) {

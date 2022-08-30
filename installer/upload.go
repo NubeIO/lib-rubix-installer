@@ -3,7 +3,7 @@ package installer
 import (
 	"errors"
 	"fmt"
-	fileutils "github.com/NubeIO/lib-dirs/dirs"
+	"github.com/NubeIO/lib-files/fileutils"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"mime/multipart"
@@ -29,21 +29,20 @@ func (inst *App) CompareBuildToArch(buildZipName, productType string) error {
 	check := inst.GetZipBuildDetails(buildZipName)
 	productInfo, err := inst.GetProduct() // same api as 0.0.0.0:1661/api/system/product check the arch type
 	if err != nil {
-		log.Errorf("upload build get product type err:%s", err.Error())
+		log.Errorf("upload build get product type err: %s", err.Error())
 		return err
 	}
 	if check.MatchedArch != productInfo.Arch {
-		errMsg := fmt.Sprintf("upload build incorrect arch type was uploaded build arch:%s host arch:%s", check.MatchedArch, productInfo.Arch)
+		errMsg := fmt.Sprintf("upload build incorrect arch type was uploaded build arch: %s host arch: %s", check.MatchedArch, productInfo.Arch)
 		log.Errorf(errMsg)
 		return errors.New(errMsg)
 	}
 	if productType != productInfo.Product {
-		errMsg := fmt.Sprintf("upload build incorrect product type was uploaded build arch:%s host product:%s", productType, productInfo.Product)
+		errMsg := fmt.Sprintf("upload build incorrect product type was uploaded build arch: %s host product: %s", productType, productInfo.Product)
 		log.Errorf(errMsg)
 		return errors.New(errMsg)
 	}
 	return nil
-
 }
 
 func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
@@ -68,27 +67,27 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 	} else {
 		err := inst.CompareBuildToArch(file.Filename, productType)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("upload edge app check arch err:%s", err.Error()))
+			return nil, errors.New(fmt.Sprintf("upload edge app check arch err: %s", err.Error()))
 		}
 	}
 	resp, err := inst.Upload(file) // save app in tmp dir
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("upload edge app unzip err:%s", err.Error()))
+		return nil, errors.New(fmt.Sprintf("upload edge app unzip err: %s", err.Error()))
 	}
 	serviceFile, err := inst.GetNubeServiceFileName(appName)
 	if err != nil {
 		serviceFile = fmt.Sprintf("nubeio-%s.service", appName)
 	}
-	log.Infof("try and stop service:%s", serviceFile)
-	action, err := inst.Ctl.CtlAction("stop", serviceFile, inst.DefaultTimeout) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
+	log.Infof("try and stop service: %s", serviceFile)
+	action, err := inst.Ctl.CtlAction("stop", serviceFile) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
 	if action != nil {
 		if action.Ok {
-			log.Infof("failed to stop service:%s", serviceFile)
+			log.Infof("failed to stop service: %s", serviceFile)
 		} else {
-			log.Infof("was able to stop service:%s", serviceFile)
+			log.Infof("was able to stop service: %s", serviceFile)
 		}
 	} else {
-		log.Infof("was able to stop service:%s", serviceFile)
+		log.Infof("was able to stop service: %s", serviceFile)
 	}
 	installApp, err := inst.InstallEdgeApp(&Install{
 		Name:    app.Name,
@@ -112,7 +111,7 @@ func (inst *App) Upload(zip *multipart.FileHeader) (*UploadResponse, error) {
 	if tmpDir, err = inst.MakeTmpDirUpload(); err != nil {
 		return nil, err
 	}
-	log.Infof("upload build to tmp dir:%s", tmpDir)
+	log.Infof("upload build to tmp dir: %s", tmpDir)
 	zipSource, err := inst.SaveUploadedFile(zip, tmpDir) // save app in tmp dir
 	if err != nil {
 		return nil, err
@@ -136,7 +135,7 @@ func (inst *App) uploadServiceFile(appName, version string, file *multipart.File
 	// make the dirs
 	var err error
 	if filepath.Ext(file.Filename) != ".service" {
-		return nil, errors.New(fmt.Sprintf("service file provided:%s, did not have correct file extension must be (.service)", file.Filename))
+		return nil, errors.New(fmt.Sprintf("service file provided: %s, did not have correct file extension must be (.service)", file.Filename))
 	}
 	if err := inst.MakeTmpDir(); err != nil {
 		return nil, err
@@ -145,8 +144,8 @@ func (inst *App) uploadServiceFile(appName, version string, file *multipart.File
 	if tmpDir, err = inst.MakeTmpDirUpload(); err != nil {
 		return nil, err
 	}
-	log.Infof("upload service to tmp dir:%s", tmpDir)
-	log.Infof("app:%s version:%s", appName, version)
+	log.Infof("upload service to tmp dir: %s", tmpDir)
+	log.Infof("app: %s version: %s", appName, version)
 	// save app in tmp dir
 	zipSource, err := inst.SaveUploadedFile(file, tmpDir)
 	if err != nil {

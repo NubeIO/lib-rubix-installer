@@ -2,9 +2,8 @@ package installer
 
 import (
 	"fmt"
-	fileutils "github.com/NubeIO/lib-dirs/dirs"
+	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/ctl"
-	"github.com/NubeIO/lib-systemctl-go/systemctl"
 )
 
 type RemoveRes struct {
@@ -21,19 +20,11 @@ type RemoveRes struct {
 	Error                string `json:"error,omitempty"`
 }
 
-/*
-- stop, disable service
-- remove service file
-*/
-
 // UninstallApp full removal of an app, including removing the linux service
 func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error) {
 	serviceName := inst.setServiceFileName(appName)
-	service := ctl.New(serviceName, "")
-	service.InstallOpts = ctl.InstallOpts{
-		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
-	}
-	remove, err := service.Remove()
+	service := ctl.New(serviceName, false, inst.DefaultTimeout)
+	remove := service.Remove()
 	resp := &RemoveRes{
 		ServiceWasInstalled:  remove.ServiceWasInstalled,
 		Stop:                 remove.Stop,
@@ -43,18 +34,14 @@ func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error
 		DeleteServiceFile:    remove.DeleteServiceFile,
 		DeleteServiceFileUsr: remove.DeleteServiceFileUsr,
 	}
-	if err != nil {
-		resp.RemoveServiceErr = err.Error()
-		err = nil
-	}
 	var removeAppInstall = "removed app from install dir ok"
-	err = inst.RemoveAppInstall(appName)
+	err := inst.RemoveAppInstall(appName)
 	if err != nil {
 		resp.Error = err.Error()
 		removeAppInstall = fmt.Sprintf("failed to delete app from install dir")
 	}
 	resp.DeleteAppInstallDir = removeAppInstall
-	if deleteApp { //delete app from app install dir
+	if deleteApp { // delete app from app install dir
 		err := inst.RemoveApp(appName)
 		var removeApp = "removed app from data dir ok"
 		if err != nil {
