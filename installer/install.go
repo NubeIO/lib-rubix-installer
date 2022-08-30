@@ -46,27 +46,27 @@ func (inst *App) installEdgeApp(appName, version, source string, deleteApp bool)
 	log.Infof("remove existing app from the install dir before the install is started")
 	uninstallApp, err := inst.UninstallApp(appName, deleteApp)
 	if err != nil {
-		log.Errorf("remove app install dir:%s", err.Error())
+		log.Errorf("remove app install dir: %s", err.Error())
 	}
 	// make the dirs
 	err = inst.DirsInstallApp(appName, version)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("install edge app make dirs:%s", err.Error()))
+		return nil, errors.New(fmt.Sprintf("install edge app make dirs: %s", err.Error()))
 	}
-	log.Infof("made all dirs for app:%s, version:%s", appName, version)
+	log.Infof("made all dirs for app: %s, version: %s", appName, version)
 	dest := inst.getAppInstallPathAndVersion(appName, version)
-	log.Infof("app zip source:%s", source)
-	log.Infof("app zip dest:%s", dest)
+	log.Infof("app zip source: %s", source)
+	log.Infof("app zip dest: %s", dest)
 	// unzip the build to the app dir  /data/rubix-service/install/wires-build
 	_, err = inst.unZip(source, dest) // unzip the build
 	if err != nil {
-		log.Errorf("install edge app unzip source:%s dest:%s err:%s", source, dest, err.Error())
-		return nil, errors.New(fmt.Sprintf("install edge app unzip err:%s", err.Error()))
+		log.Errorf("install edge app unzip source: %s dest: %s err: %s", source, dest, err.Error())
+		return nil, errors.New(fmt.Sprintf("install edge app unzip err: %s", err.Error()))
 	}
 	if appName != "rubix-wires" {
 		files, err := inst.listFiles(dest)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("install edge app list files err:%s", err.Error()))
+			return nil, errors.New(fmt.Sprintf("install edge app list files err: %s", err.Error()))
 		}
 		if len(files) > 0 {
 			for _, file := range files {
@@ -78,7 +78,7 @@ func (inst *App) installEdgeApp(appName, version, source string, deleteApp bool)
 					err = inst.MoveFile(existingFile, newFile, true) // rename the build
 					os.Chmod(newFile, os.FileMode(inst.FilePerm))
 					if err != nil {
-						return nil, errors.New(fmt.Sprintf("install edge app rename file err:%s", err.Error()))
+						return nil, errors.New(fmt.Sprintf("install edge app rename file err: %s", err.Error()))
 					}
 				}
 			}

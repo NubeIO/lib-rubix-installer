@@ -54,7 +54,7 @@ func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error
 		removeAppInstall = fmt.Sprintf("failed to delete app from install dir")
 	}
 	resp.DeleteAppInstallDir = removeAppInstall
-	if deleteApp { //delete app from app install dir
+	if deleteApp { // delete app from app install dir
 		err := inst.RemoveApp(appName)
 		var removeApp = "removed app from data dir ok"
 		if err != nil {

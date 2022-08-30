@@ -70,7 +70,7 @@ func (inst *App) ListAppsAndService() ([]InstalledServices, error) {
 		installedService.ServiceName = name
 		installed, err := systemCtl.State(name, systemOpts)
 		if err != nil {
-			log.Errorf("service is not isntalled:%s", name)
+			log.Errorf("service is not isntalled: %s", name)
 		}
 		installedService.AppStatus = installed
 		installedServices = append(installedServices, installedService)
@@ -100,7 +100,7 @@ func (inst *App) ListNubeServices() ([]InstalledServices, error) {
 		installedService.ServiceName = file
 		installed, err := systemCtl.State(file, systemOpts)
 		if err != nil {
-			log.Errorf("service is not isntalled:%s", file)
+			log.Errorf("service is not isntalled: %s", file)
 		}
 		installedService.AppStatus = installed
 		installedServices = append(installedServices, installedService)

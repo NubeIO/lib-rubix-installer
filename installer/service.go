@@ -32,15 +32,15 @@ func (inst *App) InstallService(app *Install) (*InstallResp, error) {
 	}
 	found := fileutils.New().FileExists(serviceFilePath)
 	if !found {
-		return nil, errors.New(fmt.Sprintf("no service file found in path:%s", serviceFilePath))
+		return nil, errors.New(fmt.Sprintf("no service file found in path: %s", serviceFilePath))
 	}
 	found = inst.ConfirmAppDir(app.Name)
 	if !found {
-		return nil, errors.New(fmt.Sprintf("no app dir found for provided app:%s", app.Name))
+		return nil, errors.New(fmt.Sprintf("no app dir found for provided app: %s", app.Name))
 	}
 	found = inst.ConfirmAppInstallDir(app.Name)
 	if !found {
-		return nil, errors.New(fmt.Sprintf("no app install dir found for provided app:%s", app.Name))
+		return nil, errors.New(fmt.Sprintf("no app install dir found for provided app: %s", app.Name))
 	}
 	return inst.installService(serviceName, serviceFilePath)
 }
@@ -70,7 +70,7 @@ type InstallResp struct {
 	CheckIsRunning bool   `json:"check_is_running"`
 }
 
-//Install a new service
+// Install a new service
 func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	resp := &InstallResp{
 		Install: "install ok",
@@ -80,35 +80,35 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 		Timeout:  defaultTimeout,
 	})
 	var ok = "action ok"
-	//reload
+	// reload
 	err := systemCtl.DaemonReload(systemOpts)
 	if err != nil {
-		log.Errorf("failed to DaemonReload%s: err:%s", service, err.Error())
+		log.Errorf("failed to DaemonReload%s: err: %s", service, err.Error())
 		resp.DaemonReload = err.Error()
 		return resp, err
 	} else {
 		resp.DaemonReload = ok
 	}
-	//enable
+	// enable
 	err = systemCtl.Enable(service, systemOpts)
 	if err != nil {
-		log.Errorf("failed to enable%s: err:%s", service, err.Error())
+		log.Errorf("failed to enable%s: err: %s", service, err.Error())
 		resp.Enable = err.Error()
 		return resp, err
 	} else {
 		resp.Enable = ok
 	}
-	log.Infof("enable new service:%s", service)
-	//start
+	log.Infof("enable new service: %s", service)
+	// start
 	err = systemCtl.Restart(service, systemOpts)
 	if err != nil {
-		log.Errorf("failed to start%s: err:%s", service, err.Error())
+		log.Errorf("failed to start %s: err: %s", service, err.Error())
 		resp.Restart = err.Error()
 		return resp, err
 	} else {
 		resp.Restart = ok
 	}
-	log.Infof("start new service:%s", service)
+	log.Infof("start new service: %s", service)
 	time.Sleep(8 * time.Second)
 	active, status, err := systemCtl.IsRunning(service, systemctl.Options{})
 	if err != nil {

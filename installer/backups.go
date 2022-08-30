@@ -96,7 +96,7 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 	if deleteDirName == "" {
 		return nil, errors.New("destination can not be empty")
 	}
-	log.Infof("restore backup delete exiting dir to destination dir:%s", deleteDirName)
+	log.Infof("restore backup delete exiting dir to destination dir: %s", deleteDirName)
 	var tmpDir string
 	if tmpDir, err = inst.MakeBackupTmpDirUpload(); err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 			}
 		}
 		if !hasCorrectPath {
-			return nil, errors.New(fmt.Sprintf("no mathcing path name in the uploaded zip folder equal to:%s", checkDirName))
+			return nil, errors.New(fmt.Sprintf("no mathcing path name in the uploaded zip folder equal to: %s", checkDirName))
 		}
 	}
 	if appVersion != "" {
@@ -140,11 +140,11 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("restore backup unzip backup from source:%s", zipSource)
-	log.Infof("restore backup unzip backup to destination dir:%s", destination)
+	log.Infof("restore backup unzip backup from source: %s", zipSource)
+	log.Infof("restore backup unzip backup to destination dir: %s", destination)
 	err = unzip(zipSource, destination)
 	if err != nil {
-		log.Errorf("restore backup unzip backup to dir:%s err:%s", destination, err.Error())
+		log.Errorf("restore backup unzip backup to dir: %s err: %s", destination, err.Error())
 		return nil, err
 	}
 	return &UploadResponse{
@@ -164,7 +164,6 @@ func (inst *App) ListFullBackups() ([]ListBackups, error) {
 		return nil, err
 	}
 	return inst.listFilesAndPath(path)
-
 }
 
 // ListAppBackupsDirs list all the folder for each app
@@ -219,7 +218,6 @@ func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
 			dirContents = append(dirContents, dirContent)
 		}
 	}
-
 	return dirContents, nil
 }
 
@@ -227,7 +225,7 @@ func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
 DELETE BACK-UPS
 */
 
-//DeleteAllFullBackups will delete a full backup of the data dir /data
+// DeleteAllFullBackups will delete a full backup of the data dir /data
 func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
 	path, err := inst.generateHomeFullBackupFolderName()
@@ -235,12 +233,12 @@ func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 		resp.Message = "failed to find backup path"
 		return resp, err
 	}
-	//err = inst.RmRF(path)
+	// err = inst.RmRF(path)
 	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
 	}
-	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	resp.Message = fmt.Sprintf("deleted ok: %s", path)
 	return resp, nil
 }
 
@@ -254,10 +252,10 @@ func (inst *App) DeleteAllAppBackups() (*MessageResponse, error) {
 	}
 	err = inst.RmRF(path)
 	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
 	}
-	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	resp.Message = fmt.Sprintf("deleted ok: %s", path)
 	return resp, nil
 }
 
@@ -272,10 +270,10 @@ func (inst *App) DeleteAppAllBackUpByName(appName string) (*MessageResponse, err
 	path = fmt.Sprintf("%s/%s", path, appName)
 	err = inst.RmRF(path)
 	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
 	}
-	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	resp.Message = fmt.Sprintf("deleted ok: %s", path)
 	return resp, nil
 }
 
@@ -290,10 +288,10 @@ func (inst *App) DeleteAppOneBackUpByName(appName, backupFolder string) (*Messag
 	path = fmt.Sprintf("%s/%s/%s", path, appName, backupFolder)
 	err = inst.Rm(path)
 	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
 	}
-	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	resp.Message = fmt.Sprintf("deleted ok: %s", path)
 	return resp, nil
 }
 
@@ -307,10 +305,10 @@ func (inst *App) WipeBackups() (*MessageResponse, error) {
 	}
 	err = inst.RmRF(path)
 	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete:%s", path)
+		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
 	}
-	resp.Message = fmt.Sprintf("deleted ok:%s", path)
+	resp.Message = fmt.Sprintf("deleted ok: %s", path)
 	return resp, nil
 }
 
@@ -342,14 +340,14 @@ func (inst *App) FullBackUp(deiceName ...string) (string, error) {
 	return zipName, fileutils.New().RecursiveZip(source, zipName)
 }
 
-// BackupApp backup an app  /data/backups/apps/appName/appName-version-2022-07-31 12:02:01
+// BackupApp backup an app /data/backups/apps/appName/appName-version-2022-07-31 12:02:01
 func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) {
 	if appName == "" {
 		return "", errors.New("app name can not be empty")
 	}
 	found := inst.ConfirmAppDir(appName)
 	if !found {
-		return "", errors.New(fmt.Sprintf("failed to find app:%s", appName))
+		return "", errors.New(fmt.Sprintf("failed to find app: %s", appName))
 	}
 	version := inst.GetAppVersion(appName)
 	if version == "" {
@@ -373,7 +371,7 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 	return zipName, fileutils.New().RecursiveZip(source, zipName)
 }
 
-//MakeBackupTmpDirUpload  => /user/home/backup/tmp/tmp_dir_name
+// MakeBackupTmpDirUpload  => /user/home/backup/tmp/tmp_dir_name
 func (inst *App) MakeBackupTmpDirUpload() (string, error) {
 	home, err := inst.backUpHome()
 	if err != nil {

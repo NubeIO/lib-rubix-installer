@@ -2,7 +2,7 @@ package installer
 
 import (
 	"fmt"
-	pprint "github.com/NubeIO/lib-rubix-installer/print"
+	"github.com/NubeIO/lib-rubix-installer/pprint"
 	"testing"
 )
 
@@ -12,7 +12,6 @@ This is for taking backups on an edge device
 
 func Test_readZip(t *testing.T) {
 	readZip("/home/aidan/backup/full/testDevice1234-full-backup-2022-08-05 06:30:05.zip")
-
 }
 
 func Test_BackupApp(t *testing.T) {
@@ -25,7 +24,6 @@ func Test_BackupApp(t *testing.T) {
 		return
 	}
 	fmt.Println(back)
-
 }
 
 func Test_FullBackUp(t *testing.T) {
@@ -86,7 +84,6 @@ func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
 		return
 	}
 	fmt.Println(backs)
-
 }
 
 func TestApp_DeleteAppBackUp(t *testing.T) {
@@ -101,6 +98,5 @@ func TestApp_DeleteAppBackUp(t *testing.T) {
 	if byApp == nil {
 
 	}
-	pprint.PrintJOSN(byApp)
-
+	pprint.PrintJSON(byApp)
 }

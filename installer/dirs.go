@@ -26,27 +26,26 @@ func (inst *App) DirsInstallApp(appName, version string) error {
 		return err
 	}
 	err = inst.MakeAppDir(appName)
-	log.Infof("install app edge: MakeAppDir app:%s", appName)
+	log.Infof("install app edge: MakeAppDir app: %s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppPath(appName)), os.FileMode(filePerm)) // make the app config dir
-	log.Infof("install app edge: MakeAppDir app:%s", appName)
+	log.Infof("install app edge: MakeAppDir app: %s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppInstallDir(appName)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s", appName)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name: %s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppVersionDir(appName, version)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name:%s version:%s", appName, version)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name: %s version: %s", appName, version)
 	if err != nil {
 		return err
 	}
 	return nil
-
 }
 
 // MakeAllDirs make all the required dirs
@@ -70,7 +69,7 @@ func (inst *App) MakeAllDirs() error {
 	return nil
 }
 
-//MakeTmpDir  => /data/tmp
+// MakeTmpDir  => /data/tmp
 func (inst *App) MakeTmpDir() error {
 	if err := checkDir(inst.DataDir); err != nil {
 		return errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
@@ -78,7 +77,7 @@ func (inst *App) MakeTmpDir() error {
 	return makeDirectoryIfNotExists(inst.TmpDir, os.FileMode(inst.FilePerm))
 }
 
-//MakeTmpDirUpload  => /data/tmp
+// MakeTmpDirUpload  => /data/tmp
 func (inst *App) MakeTmpDirUpload() (string, error) {
 	if err := checkDir(inst.DataDir); err != nil {
 		return "", errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
@@ -88,7 +87,7 @@ func (inst *App) MakeTmpDirUpload() (string, error) {
 	return tmpDir, err
 }
 
-//MakeAppInstallDir  => /data/rubix-service/apps/install/wires-builds
+// MakeAppInstallDir  => /data/rubix-service/apps/install/wires-builds
 func (inst *App) MakeAppInstallDir(appBuildName string, removeExisting ...bool) error {
 	if err := emptyPath(appBuildName); err != nil {
 		return err
@@ -109,7 +108,7 @@ func (inst *App) MakeAppInstallDir(appBuildName string, removeExisting ...bool) 
 	return makeDirectoryIfNotExists(appInstallDir, os.FileMode(inst.FilePerm))
 }
 
-//MakeAppVersionDir  => /data/rubix-service/apps/install/wires-builds/v0.0.1
+// MakeAppVersionDir  => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) MakeAppVersionDir(appName, version string) error {
 	if err := emptyPath(appName); err != nil {
 		return err
@@ -124,7 +123,7 @@ func (inst *App) MakeAppVersionDir(appName, version string) error {
 	return makeDirectoryIfNotExists(appDir, os.FileMode(inst.FilePerm))
 }
 
-//MakeAppDir  => /data/flow-framework
+// MakeAppDir  => /data/flow-framework
 func (inst *App) MakeAppDir(appName string) error {
 	if err := emptyPath(appName); err != nil {
 		return err
@@ -135,7 +134,7 @@ func (inst *App) MakeAppDir(appName string) error {
 	return makeDirectoryIfNotExists(fmt.Sprintf("%s/%s", inst.DataDir, appName), os.FileMode(inst.FilePerm))
 }
 
-//MakeInstallDir  => /data/rubix-service/install
+// MakeInstallDir  => /data/rubix-service/install
 func (inst *App) MakeInstallDir() error {
 	if inst.AppsInstallDir == "" {
 		return errors.New("MakeDataDir path can not be empty")
@@ -154,7 +153,7 @@ func (inst *App) MakeInstallDir() error {
 	return err
 }
 
-//MakeDownloadDir  => /user/home/download
+// MakeDownloadDir  => /user/home/download
 func (inst *App) MakeDownloadDir() error {
 	if inst.AppsInstallDir == "" {
 		return errors.New("MakeDownloadDir path can not be empty")
@@ -162,7 +161,7 @@ func (inst *App) MakeDownloadDir() error {
 	return mkdirAll(inst.AppsDownloadDir, os.FileMode(inst.FilePerm))
 }
 
-//MakeDataDir  => /data
+// MakeDataDir  => /data
 func (inst *App) MakeDataDir() error {
 	if inst.DataDir == "" {
 		return errors.New("/data path can not be empty")
@@ -170,12 +169,12 @@ func (inst *App) MakeDataDir() error {
 	return makeDirectoryIfNotExists(inst.DataDir, os.FileMode(inst.FilePerm))
 }
 
-//MakeDirectoryIfNotExists make dir
+// MakeDirectoryIfNotExists make dir
 func (inst *App) MakeDirectoryIfNotExists(path string, perm os.FileMode) error {
 	return makeDirectoryIfNotExists(path, perm)
 }
 
-//MkdirAll make dir
+// MkdirAll make dir
 func (inst *App) MkdirAll(path string, perm os.FileMode) error {
 	return mkdirAll(path, perm)
 }
@@ -185,10 +184,9 @@ func mkdirAll(path string, perm os.FileMode) error {
 	path = filePath(path)
 	err := os.MkdirAll(path, perm)
 	if err != nil {
-		return errors.New(fmt.Sprintf("path %s, err:%s", path, err.Error()))
+		return errors.New(fmt.Sprintf("path %s, err: %s", path, err.Error()))
 	}
 	return nil
-
 }
 
 // makeDirectoryIfNotExists if not exist make dir
@@ -243,12 +241,12 @@ func checkVersionBool(version string) bool {
 
 func checkVersion(version string) error {
 	if version[0:1] != "v" { // make sure have a v at the start v0.1.1
-		return errors.New(fmt.Sprintf("incorrect provided:%s version number try: v1.2.3", version))
+		return errors.New(fmt.Sprintf("incorrect provided: %s version number try: v1.2.3", version))
 	}
 	p := strings.Split(version, ".")
 	if len(p) >= 2 && len(p) < 4 {
 	} else {
-		return errors.New(fmt.Sprintf("incorrect lenght provided:%s version number try: v1.2.3", version))
+		return errors.New(fmt.Sprintf("incorrect lenght provided: %s version number try: v1.2.3", version))
 	}
 	return nil
 }
