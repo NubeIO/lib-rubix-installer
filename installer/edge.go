@@ -19,11 +19,6 @@ type AppResponse struct {
 	RemoveRes *RemoveRes             `json:"remove_res"`
 }
 
-var systemOpts = systemctl.Options{
-	UserMode: false,
-	Timeout:  defaultTimeout,
-}
-
 type Apps struct {
 	Name    string `json:"name"`
 	Version string `json:"version,omitempty"`
@@ -62,13 +57,11 @@ func (inst *App) ListAppsAndService() ([]InstalledServices, error) {
 		if err != nil {
 			return nil, err
 		}
-		systemCtl := systemctl.New(&systemctl.Ctl{
-			UserMode: false,
-			Timeout:  defaultTimeout,
-		})
+		systemCtl := systemctl.New(false, inst.DefaultTimeout)
 		installedService.AppName = app.Name
 		installedService.ServiceName = name
-		installed, err := systemCtl.State(name, systemOpts)
+		opts := systemctl.Options{UserMode: false, Timeout: inst.DefaultTimeout}
+		installed, err := systemCtl.State(name, opts)
 		if err != nil {
 			log.Errorf("service is not isntalled: %s", name)
 		}
@@ -93,12 +86,10 @@ func (inst *App) ListNubeServices() ([]InstalledServices, error) {
 		return nil, err
 	}
 	for _, file := range files {
-		systemCtl := systemctl.New(&systemctl.Ctl{
-			UserMode: false,
-			Timeout:  defaultTimeout,
-		})
+		systemCtl := systemctl.New(false, inst.DefaultTimeout)
 		installedService.ServiceName = file
-		installed, err := systemCtl.State(file, systemOpts)
+		opts := systemctl.Options{UserMode: false, Timeout: inst.DefaultTimeout}
+		installed, err := systemCtl.State(file, opts)
 		if err != nil {
 			log.Errorf("service is not isntalled: %s", file)
 		}

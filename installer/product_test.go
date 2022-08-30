@@ -9,7 +9,7 @@ import (
 func TestGetProduct(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	installed, err := app.GetProduct()
 	fmt.Println(err)
 	pprint.PrintJSON(installed)

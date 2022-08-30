@@ -50,11 +50,11 @@ func (inst *App) InstallService(app *Install) (*InstallResp, error) {
 //	- path: the service file path and name (eg: "/tmp/rubix-bios.service")
 func (inst *App) installService(service, tmpServiceFile string) (*InstallResp, error) {
 	var err error
-	ser := ctl.New(service, tmpServiceFile)
+	ser := ctl.New(service)
 	ser.InstallOpts = ctl.InstallOpts{
 		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
 	}
-	err = ser.TransferFile()
+	err = ser.TransferSystemdFile(tmpServiceFile)
 	if err != nil {
 		fmt.Println("full install error", err)
 		return nil, err
@@ -75,13 +75,11 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	resp := &InstallResp{
 		Install: "install ok",
 	}
-	systemCtl := systemctl.New(&systemctl.Ctl{
-		UserMode: false,
-		Timeout:  defaultTimeout,
-	})
+	systemCtl := systemctl.New(false, inst.DefaultTimeout)
 	var ok = "action ok"
+	opts := systemctl.Options{UserMode: false, Timeout: inst.DefaultTimeout}
 	// reload
-	err := systemCtl.DaemonReload(systemOpts)
+	err := systemCtl.DaemonReload(opts)
 	if err != nil {
 		log.Errorf("failed to DaemonReload%s: err: %s", service, err.Error())
 		resp.DaemonReload = err.Error()
@@ -90,7 +88,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 		resp.DaemonReload = ok
 	}
 	// enable
-	err = systemCtl.Enable(service, systemOpts)
+	err = systemCtl.Enable(service, opts)
 	if err != nil {
 		log.Errorf("failed to enable%s: err: %s", service, err.Error())
 		resp.Enable = err.Error()
@@ -100,7 +98,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	}
 	log.Infof("enable new service: %s", service)
 	// start
-	err = systemCtl.Restart(service, systemOpts)
+	err = systemCtl.Restart(service, opts)
 	if err != nil {
 		log.Errorf("failed to start %s: err: %s", service, err.Error())
 		resp.Restart = err.Error()

@@ -79,7 +79,7 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 		serviceFile = fmt.Sprintf("nubeio-%s.service", appName)
 	}
 	log.Infof("try and stop service: %s", serviceFile)
-	action, err := inst.Ctl.CtlAction("stop", serviceFile, inst.DefaultTimeout) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
+	action, err := inst.Ctl.CtlAction("stop", serviceFile) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
 	if action != nil {
 		if action.Ok {
 			log.Infof("failed to stop service: %s", serviceFile)

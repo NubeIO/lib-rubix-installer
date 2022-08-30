@@ -30,7 +30,7 @@ func (inst *App) DirsInstallApp(appName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppPath(appName)), os.FileMode(filePerm)) // make the app config dir
+	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppPath(appName)), os.FileMode(inst.FilePerm)) // make the app config dir
 	log.Infof("install app edge: MakeAppDir app: %s", appName)
 	if err != nil {
 		return err
@@ -192,9 +192,6 @@ func mkdirAll(path string, perm os.FileMode) error {
 // makeDirectoryIfNotExists if not exist make dir
 func makeDirectoryIfNotExists(path string, perm os.FileMode) error {
 	path = filePath(path)
-	if perm == 0 {
-		perm = 0755
-	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return mkdirAll(path, os.ModeDir|perm)
 	}

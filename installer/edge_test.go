@@ -21,7 +21,7 @@ func Test_ConfirmAppInstalled(t *testing.T) {
 func Test_GetAppVersion(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	version := app.GetAppVersion(appName)
 	fmt.Println(version)
 }
@@ -29,7 +29,7 @@ func Test_GetAppVersion(t *testing.T) {
 func Test_GetApps(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	installed, err := app.ListApps()
 	fmt.Println(err)
 	if err != nil {
@@ -41,7 +41,7 @@ func Test_GetApps(t *testing.T) {
 func Test_ListNubeServicesFiles(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	installed, err := app.ListNubeServiceFiles()
 	fmt.Println(err)
 	if err != nil {
@@ -52,7 +52,7 @@ func Test_ListNubeServicesFiles(t *testing.T) {
 func Test_getNubeServiceFileName(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	installed, err := app.GetNubeServiceFileName(appName)
 	fmt.Println(err)
 	if err != nil {
@@ -63,7 +63,7 @@ func Test_getNubeServiceFileName(t *testing.T) {
 func Test_ListNubeServices(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	installed, err := app.ListNubeServices()
 	fmt.Println(installed, err)
 	if err != nil {
@@ -75,7 +75,7 @@ func Test_ListNubeServices(t *testing.T) {
 func Test_ListAppsAndService(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: nonRoot})
+	app := New(&App{DataDir: "/data", FilePerm: filePerm})
 	installed, err := app.ListAppsAndService()
 	fmt.Println(installed, err)
 	if err != nil {

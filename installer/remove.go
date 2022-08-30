@@ -21,19 +21,14 @@ type RemoveRes struct {
 	Error                string `json:"error,omitempty"`
 }
 
-/*
-- stop, disable service
-- remove service file
-*/
-
 // UninstallApp full removal of an app, including removing the linux service
 func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error) {
 	serviceName := inst.setServiceFileName(appName)
-	service := ctl.New(serviceName, "")
+	service := ctl.New(serviceName)
 	service.InstallOpts = ctl.InstallOpts{
 		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
 	}
-	remove, err := service.Remove()
+	remove := service.Remove()
 	resp := &RemoveRes{
 		ServiceWasInstalled:  remove.ServiceWasInstalled,
 		Stop:                 remove.Stop,
@@ -43,12 +38,8 @@ func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error
 		DeleteServiceFile:    remove.DeleteServiceFile,
 		DeleteServiceFileUsr: remove.DeleteServiceFileUsr,
 	}
-	if err != nil {
-		resp.RemoveServiceErr = err.Error()
-		err = nil
-	}
 	var removeAppInstall = "removed app from install dir ok"
-	err = inst.RemoveAppInstall(appName)
+	err := inst.RemoveAppInstall(appName)
 	if err != nil {
 		resp.Error = err.Error()
 		removeAppInstall = fmt.Sprintf("failed to delete app from install dir")

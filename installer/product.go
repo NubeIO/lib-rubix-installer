@@ -16,10 +16,6 @@ type Product struct {
 	OS           OS     `json:"os"`      // Linux, Windows, Darwin
 }
 
-func GetProduct(fileAndPath ...string) (*Product, error) {
-	return read(fileAndPath...)
-}
-
 func (inst *App) GetProduct(fileAndPath ...string) (*Product, error) {
 	edgeVersion := inst.GetAppVersion("rubix-edge")
 	ffVersion := inst.GetAppVersion("flow-framework")
