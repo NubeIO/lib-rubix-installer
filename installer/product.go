@@ -2,7 +2,7 @@ package installer
 
 import (
 	"errors"
-	"github.com/NubeIO/lib-dirs/dirs/jparse"
+	"github.com/NubeIO/lib-files/fileutils/jparse"
 	log "github.com/sirupsen/logrus"
 	"runtime"
 )
