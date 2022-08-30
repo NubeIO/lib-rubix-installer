@@ -30,7 +30,7 @@ func (inst *App) InstallService(app *Install) (*InstallResp, error) {
 	if serviceFilePath == "" {
 		return nil, errors.New("service file path can not be empty, /data/tmp/tmp_B8CB4D888176/nubeio-flow-framework.service")
 	}
-	found := fileutils.New().FileExists(serviceFilePath)
+	found := fileutils.FileExists(serviceFilePath)
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no service file found in path: %s", serviceFilePath))
 	}

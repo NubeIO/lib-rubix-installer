@@ -147,36 +147,36 @@ func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 }
 
 func (inst *App) ConfirmAppDir(appName string) bool {
-	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.DataDir, appName))
+	return fileutils.DirExists(fmt.Sprintf("%s/%s", inst.DataDir, appName))
 }
 
 func (inst *App) ConfirmAppInstallDir(appName string) bool {
 	appName = setWiresName(appName)
-	return fileutils.New().DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
+	return fileutils.DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
 }
 
 func (inst *App) DirExists(dir string) bool {
-	return fileutils.New().DirExists(dir)
+	return fileutils.DirExists(dir)
 }
 
 func (inst *App) FileExists(dir string) bool {
-	return fileutils.New().FileExists(dir)
+	return fileutils.FileExists(dir)
 }
 
 func (inst *App) ConfirmStoreDir() bool {
-	return fileutils.New().DirExists(inst.GetStoreDir())
+	return fileutils.DirExists(inst.GetStoreDir())
 }
 
 func (inst *App) ConfirmStoreAppDir(appName string) bool {
-	return fileutils.New().DirExists(fmt.Sprintf("%s/apps/%s", inst.GetStoreDir(), appName))
+	return fileutils.DirExists(fmt.Sprintf("%s/apps/%s", inst.GetStoreDir(), appName))
 }
 
 func (inst *App) ConfirmStoreAppVersionDir(appName, version string) bool {
-	return fileutils.New().DirExists(fmt.Sprintf("%s/apps/%s/%s", inst.GetStoreDir(), appName, version))
+	return fileutils.DirExists(fmt.Sprintf("%s/apps/%s/%s", inst.GetStoreDir(), appName, version))
 }
 
 func (inst *App) ConfirmServiceFile(serviceName string) bool {
-	return fileutils.New().FileExists(fmt.Sprintf("%s/%s", inst.LibSystemPath, serviceName))
+	return fileutils.FileExists(fmt.Sprintf("%s/%s", inst.LibSystemPath, serviceName))
 }
 
 func (inst *App) GetAppVersion(appName string) string {

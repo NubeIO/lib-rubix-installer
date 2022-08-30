@@ -337,7 +337,7 @@ func (inst *App) FullBackUp(deiceName ...string) (string, error) {
 			zipName = fmt.Sprintf("%s/%s-full-backup-%s.zip", path, deiceName[0], timestamp())
 		}
 	}
-	return zipName, fileutils.New().RecursiveZip(source, zipName)
+	return zipName, fileutils.RecursiveZip(source, zipName)
 }
 
 // BackupApp backup an app /data/backups/apps/appName/appName-version-2022-07-31 12:02:01
@@ -368,7 +368,7 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 			zipName = fmt.Sprintf("%s/%s-backup-%s-%s-%s.zip", path, deiceName[0], appName, version, timestamp())
 		}
 	}
-	return zipName, fileutils.New().RecursiveZip(source, zipName)
+	return zipName, fileutils.RecursiveZip(source, zipName)
 }
 
 // MakeBackupTmpDirUpload  => /user/home/backup/tmp/tmp_dir_name

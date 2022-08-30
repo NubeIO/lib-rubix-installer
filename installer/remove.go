@@ -67,10 +67,10 @@ func (inst *App) RemoveAppInstall(appName string) error {
 
 // RmRF remove file and all files inside
 func (inst *App) RmRF(path string) error {
-	return fileutils.New().RmRF(path)
+	return fileutils.RmRF(path)
 }
 
 // Rm remove file
 func (inst *App) Rm(path string) error {
-	return fileutils.New().Rm(path)
+	return fileutils.Rm(path)
 }
