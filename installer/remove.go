@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/ctl"
-	"github.com/NubeIO/lib-systemctl-go/systemctl"
 )
 
 type RemoveRes struct {
@@ -24,10 +23,7 @@ type RemoveRes struct {
 // UninstallApp full removal of an app, including removing the linux service
 func (inst *App) UninstallApp(appName string, deleteApp bool) (*RemoveRes, error) {
 	serviceName := inst.setServiceFileName(appName)
-	service := ctl.New(serviceName)
-	service.InstallOpts = ctl.InstallOpts{
-		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
-	}
+	service := ctl.New(serviceName, false, inst.DefaultTimeout)
 	remove := service.Remove()
 	resp := &RemoveRes{
 		ServiceWasInstalled:  remove.ServiceWasInstalled,

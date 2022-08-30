@@ -50,10 +50,7 @@ func (inst *App) InstallService(app *Install) (*InstallResp, error) {
 //	- path: the service file path and name (eg: "/tmp/rubix-bios.service")
 func (inst *App) installService(service, tmpServiceFile string) (*InstallResp, error) {
 	var err error
-	ser := ctl.New(service)
-	ser.InstallOpts = ctl.InstallOpts{
-		Options: systemctl.Options{Timeout: inst.DefaultTimeout},
-	}
+	ser := ctl.New(service, false, inst.DefaultTimeout)
 	err = ser.TransferSystemdFile(tmpServiceFile)
 	if err != nil {
 		fmt.Println("full install error", err)
@@ -77,9 +74,8 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	}
 	systemCtl := systemctl.New(false, inst.DefaultTimeout)
 	var ok = "action ok"
-	opts := systemctl.Options{UserMode: false, Timeout: inst.DefaultTimeout}
 	// reload
-	err := systemCtl.DaemonReload(opts)
+	err := systemCtl.DaemonReload()
 	if err != nil {
 		log.Errorf("failed to DaemonReload%s: err: %s", service, err.Error())
 		resp.DaemonReload = err.Error()
@@ -88,7 +84,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 		resp.DaemonReload = ok
 	}
 	// enable
-	err = systemCtl.Enable(service, opts)
+	err = systemCtl.Enable(service)
 	if err != nil {
 		log.Errorf("failed to enable%s: err: %s", service, err.Error())
 		resp.Enable = err.Error()
@@ -98,7 +94,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	}
 	log.Infof("enable new service: %s", service)
 	// start
-	err = systemCtl.Restart(service, opts)
+	err = systemCtl.Restart(service)
 	if err != nil {
 		log.Errorf("failed to start %s: err: %s", service, err.Error())
 		resp.Restart = err.Error()
@@ -108,7 +104,7 @@ func (inst *App) systemCtlInstall(service string) (*InstallResp, error) {
 	}
 	log.Infof("start new service: %s", service)
 	time.Sleep(8 * time.Second)
-	active, status, err := systemCtl.IsRunning(service, systemctl.Options{})
+	active, status, err := systemCtl.IsRunning(service)
 	if err != nil {
 		log.Errorf("service found or failed to check IsRunning: %s: %v", service, err)
 		return nil, err

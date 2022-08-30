@@ -60,8 +60,7 @@ func (inst *App) ListAppsAndService() ([]InstalledServices, error) {
 		systemCtl := systemctl.New(false, inst.DefaultTimeout)
 		installedService.AppName = app.Name
 		installedService.ServiceName = name
-		opts := systemctl.Options{UserMode: false, Timeout: inst.DefaultTimeout}
-		installed, err := systemCtl.State(name, opts)
+		installed, err := systemCtl.State(name)
 		if err != nil {
 			log.Errorf("service is not isntalled: %s", name)
 		}
@@ -88,8 +87,7 @@ func (inst *App) ListNubeServices() ([]InstalledServices, error) {
 	for _, file := range files {
 		systemCtl := systemctl.New(false, inst.DefaultTimeout)
 		installedService.ServiceName = file
-		opts := systemctl.Options{UserMode: false, Timeout: inst.DefaultTimeout}
-		installed, err := systemCtl.State(file, opts)
+		installed, err := systemCtl.State(file)
 		if err != nil {
 			log.Errorf("service is not isntalled: %s", file)
 		}
