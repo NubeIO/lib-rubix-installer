@@ -1,6 +1,6 @@
 module github.com/NubeIO/lib-rubix-installer
 
-//replace github.com/NubeIO/lib-systemctl-go => /Users/raibnod/Enviro/lib-systemctl-go
+replace github.com/NubeIO/lib-systemctl-go => /Users/raibnod/Enviro/lib-systemctl-go
 //replace github.com/NubeIO/lib-files => /Users/raibnod/Enviro/lib-dirs
 
 go 1.17

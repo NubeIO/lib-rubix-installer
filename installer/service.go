@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
-	"github.com/NubeIO/lib-systemctl-go/ctl"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
+	"github.com/NubeIO/lib-systemctl-go/systemd"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -50,8 +50,8 @@ func (inst *App) InstallService(app *Install) (*InstallResp, error) {
 //	- path: the service file path and name (eg: "/tmp/rubix-bios.service")
 func (inst *App) installService(service, tmpServiceFile string) (*InstallResp, error) {
 	var err error
-	ser := ctl.New(service, false, inst.DefaultTimeout)
-	err = ser.TransferSystemdFile(tmpServiceFile)
+	systemdService := systemd.New(service, false, inst.DefaultTimeout)
+	err = systemdService.TransferSystemdFile(tmpServiceFile)
 	if err != nil {
 		fmt.Println("full install error", err)
 		return nil, err

@@ -136,7 +136,7 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 
 		fmt.Println(parts)
 	}
-	err = inst.RmRF(deleteDirName)
+	err = fileutils.RmRF(deleteDirName)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ func (inst *App) DeleteAllAppBackups() (*MessageResponse, error) {
 		resp.Message = "failed to find backup path"
 		return resp, err
 	}
-	err = inst.RmRF(path)
+	err = fileutils.RmRF(path)
 	if err != nil {
 		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
@@ -268,7 +268,7 @@ func (inst *App) DeleteAppAllBackUpByName(appName string) (*MessageResponse, err
 		return resp, err
 	}
 	path = fmt.Sprintf("%s/%s", path, appName)
-	err = inst.RmRF(path)
+	err = fileutils.RmRF(path)
 	if err != nil {
 		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
@@ -286,7 +286,7 @@ func (inst *App) DeleteAppOneBackUpByName(appName, backupFolder string) (*Messag
 		return resp, err
 	}
 	path = fmt.Sprintf("%s/%s/%s", path, appName, backupFolder)
-	err = inst.Rm(path)
+	err = fileutils.Rm(path)
 	if err != nil {
 		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err
@@ -303,7 +303,7 @@ func (inst *App) WipeBackups() (*MessageResponse, error) {
 		resp.Message = "failed to find backup path"
 		return resp, err
 	}
-	err = inst.RmRF(path)
+	err = fileutils.RmRF(path)
 	if err != nil {
 		resp.Message = fmt.Sprintf("failed to delete: %s", path)
 		return resp, err

@@ -61,10 +61,9 @@ func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
 		return nil, errors.New("arch type can not be empty, try armv7 amd64")
 	}
 	if productType == "" {
-		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
+		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute, Server, Edge28, Nuc")
 	}
-	if app.Name == "rubix-wires" { // wires don't care about the arch
-	} else {
+	if app.Name != "rubix-wires" { // wires don't care about the arch
 		err := inst.CompareBuildToArch(file.Filename, productType)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("upload edge app check arch err: %s", err.Error()))

@@ -3,6 +3,7 @@ package installer
 import (
 	"errors"
 	"fmt"
+	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -30,7 +31,7 @@ func (inst *App) DirsInstallApp(appName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppPath(appName)), os.FileMode(inst.FilePerm)) // make the app config dir
+	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppDataPath(appName)), os.FileMode(inst.FilePerm)) // make the app config dir
 	log.Infof("install app edge: MakeAppDir app: %s", appName)
 	if err != nil {
 		return err
@@ -99,7 +100,7 @@ func (inst *App) MakeAppInstallDir(appBuildName string, removeExisting ...bool) 
 	appInstallDir := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appBuildName)
 	if len(removeExisting) > 0 {
 		if removeExisting[0] {
-			err := inst.RmRF(appInstallDir)
+			err := fileutils.RmRF(appInstallDir)
 			if err != nil {
 				log.Errorf("delete existing install dir: %s", err.Error())
 			}
