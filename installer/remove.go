@@ -6,7 +6,7 @@ import (
 	"github.com/NubeIO/lib-systemctl-go/systemd"
 )
 
-type RemoveRes struct {
+type UninstallResponse struct {
 	ServiceWasInstalled bool   `json:"service_was_installed"`
 	Stop                bool   `json:"stop"`
 	DaemonReload        bool   `json:"daemon_reload"`
@@ -18,11 +18,10 @@ type RemoveRes struct {
 }
 
 // UninstallApp full removal of an app, including removing the linux service
-func (inst *App) UninstallApp(appName string, deleteAppDataDir bool) (*RemoveRes, error) {
-	serviceName := inst.setServiceFileName(appName) // TODO: we don't use this convention, we directly pass service_name
+func (inst *App) UninstallApp(appName string, serviceName string, deleteAppDataDir bool) (*UninstallResponse, error) {
 	systemdService := systemd.New(serviceName, false, inst.DefaultTimeout)
-	remove := systemdService.Remove()
-	resp := &RemoveRes{
+	remove := systemdService.Uninstall()
+	resp := &UninstallResponse{
 		ServiceWasInstalled: remove.ServiceWasInstalled,
 		Stop:                remove.Stop,
 		DaemonReload:        remove.DaemonReload,

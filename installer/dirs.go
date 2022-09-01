@@ -26,13 +26,13 @@ func (inst *App) DirsInstallApp(appName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeAppDir(appName)
-	log.Infof("install app edge: MakeAppDir app: %s", appName)
+	err = inst.MakeAppDataDir(appName)
+	log.Infof("install app edge: MakeAppDataDir app: %s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppDataPath(appName)), os.FileMode(inst.FilePerm)) // make the app config dir
-	log.Infof("install app edge: MakeAppDir app: %s", appName)
+	log.Infof("install app edge: MakeDirectoryIfNotExists app: %s", appName)
 	if err != nil {
 		return err
 	}
@@ -124,8 +124,8 @@ func (inst *App) MakeAppVersionDir(appName, version string) error {
 	return makeDirectoryIfNotExists(appDir, os.FileMode(inst.FilePerm))
 }
 
-// MakeAppDir  => /data/flow-framework
-func (inst *App) MakeAppDir(appName string) error {
+// MakeAppDataDir  => /data/flow-framework
+func (inst *App) MakeAppDataDir(appName string) error {
 	if err := emptyPath(appName); err != nil {
 		return err
 	}

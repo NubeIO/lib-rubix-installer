@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
+	"github.com/NubeIO/lib-systemctl-go/systemd"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -12,11 +13,11 @@ import (
 )
 
 type AppResponse struct {
-	Name      string                 `json:"app"`
-	Version   string                 `json:"version,omitempty"`
-	AppStatus *systemctl.SystemState `json:"app_status,omitempty"`
-	Error     string                 `json:"error,omitempty"`
-	RemoveRes *RemoveRes             `json:"remove_res"`
+	Name              string                     `json:"app"`
+	Version           string                     `json:"version,omitempty"`
+	AppStatus         *systemctl.SystemState     `json:"app_status,omitempty"`
+	Error             string                     `json:"error,omitempty"`
+	UninstallResponse *systemd.UninstallResponse `json:"remove_response"`
 }
 
 type Apps struct {
@@ -127,7 +128,7 @@ func (inst *App) GetNubeServiceFileName(appName string) (string, error) {
 	return resp, err
 }
 
-func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
+func (inst *App) ConfirmAppInstalled(appName string, serviceFileName string) (*AppResponse, error) {
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
 	}
@@ -135,14 +136,15 @@ func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 	if version == "" {
 		return nil, errors.New("failed to find app version")
 	}
-	state, err := inst.CtlStatus(&CtlBody{AppName: appName})
+	ctl := systemctl.New(false, defaultTimeout)
+	state, err := ctl.State(serviceFileName)
 	if err != nil {
 		return nil, err
 	}
 	return &AppResponse{
 		Name:      appName,
 		Version:   version,
-		AppStatus: state,
+		AppStatus: &state,
 	}, err
 }
 

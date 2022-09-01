@@ -18,7 +18,7 @@ type App struct {
 	DataDir          string `json:"data_dir"`           // /data
 	HostDownloadPath string `json:"host_download_path"` // home/user/downloads
 	StoreDir         string `json:"store_dir"`
-	TmpDir           string `json:"tmp_dir"`
+	TmpDir           string `json:"tmp_dir"` // /data/tmp
 	UserRubixHome    string `json:"user_rubix_home"`
 	FilePerm         int    `json:"file_perm"`       // file permissions
 	ServiceName      string `json:"service_name"`    // nubeio-rubix-wires
@@ -29,7 +29,7 @@ type App struct {
 	AppsInstallDir   string `json:"apps_install_dir"` // /rubix-service/apps/install
 	AppsDownloadDir  string `json:"apps_download_dir"`
 	BackupsDir       string `json:"backups_dir"`
-	Ctl              *systemctl.Ctl
+	Ctl              *systemctl.SystemCtl
 }
 
 func New(app *App) *App {
