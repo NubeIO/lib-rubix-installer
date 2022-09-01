@@ -63,10 +63,6 @@ func (inst *App) MakeAllDirs() error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeDownloadDir()
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -152,14 +148,6 @@ func (inst *App) MakeInstallDir() error {
 		return err
 	}
 	return err
-}
-
-// MakeDownloadDir  => /user/home/download
-func (inst *App) MakeDownloadDir() error {
-	if inst.AppsInstallDir == "" {
-		return errors.New("MakeDownloadDir path can not be empty")
-	}
-	return mkdirAll(inst.AppsDownloadDir, os.FileMode(inst.FilePerm))
 }
 
 // MakeDataDir  => /data

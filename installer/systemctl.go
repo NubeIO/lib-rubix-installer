@@ -33,15 +33,15 @@ func (inst *App) SystemCtlAction(body *CtlBody) (*SystemResponse, error) {
 	var err error
 	switch body.Action {
 	case "start":
-		err = inst.Ctl.Start(body.ServiceName)
+		err = inst.SystemCtl.Start(body.ServiceName)
 	case "stop":
-		err = inst.Ctl.Stop(body.ServiceName)
+		err = inst.SystemCtl.Stop(body.ServiceName)
 	case "enable":
-		err = inst.Ctl.Enable(body.ServiceName)
+		err = inst.SystemCtl.Enable(body.ServiceName)
 	case "disable":
-		err = inst.Ctl.Disable(body.ServiceName)
+		err = inst.SystemCtl.Disable(body.ServiceName)
 	case "restart":
-		err = inst.Ctl.Restart(body.ServiceName)
+		err = inst.SystemCtl.Restart(body.ServiceName)
 	default:
 		err = errors.New("no valid action found try, start, stop, restart, enable or disable")
 	}
@@ -59,7 +59,7 @@ func (inst *App) SystemCtlStatus(body *CtlBody) (*systemctl.SystemState, error) 
 	if body.ServiceName == "" {
 		return nil, errors.New("service_name can not be empty")
 	}
-	resp, err := inst.Ctl.State(body.ServiceName)
+	resp, err := inst.SystemCtl.State(body.ServiceName)
 	return &resp, err
 }
 

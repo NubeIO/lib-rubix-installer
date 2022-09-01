@@ -30,8 +30,8 @@ func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) 
 }
 
 // InstallService a new linux service
-//	- service: the service_name (eg: nubeio-rubix-wires)
-//	- path: the service file path and name (eg: "/tmp/rubix-bios.service")
+//	- serviceName: the service_name (eg: nubeio-rubix-wires.service)
+//	- tmpServiceFile: the service file path and name (eg: "/tmp/rubix-bios.service")
 func (inst *App) installService(serviceName, tmpServiceFile string) (*systemd.InstallResponse, error) {
 	systemdService := systemd.New(serviceName, false, inst.DefaultTimeout)
 	err := systemdService.TransferSystemdFile(tmpServiceFile)

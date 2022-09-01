@@ -72,7 +72,7 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app unzip err: %s", err.Error()))
 	}
-	err = inst.Ctl.Stop(app.ServiceName) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
+	err = inst.SystemCtl.Stop(app.ServiceName) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
 	if err != nil {
 		log.Infof("was able to stop service: %s", app.ServiceName)
 	}
@@ -113,9 +113,7 @@ func (inst *App) UploadServiceFile(app *Upload) (*UploadResponse, error) {
 	return inst.uploadServiceFile(appName, version, file)
 }
 
-// uploadApp
 func (inst *App) uploadServiceFile(appName, version string, file *multipart.FileHeader) (*UploadResponse, error) {
-	// make the dirs
 	var err error
 	if filepath.Ext(file.Filename) != ".service" {
 		return nil, errors.New(fmt.Sprintf("service file provided: %s, did not have correct file extension must be (.service)", file.Filename))

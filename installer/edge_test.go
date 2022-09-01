@@ -7,7 +7,6 @@ import (
 )
 
 var appName = "flow-framework"
-var serviceName = "nubeio-flow-framework"
 
 func Test_ConfirmAppInstalled(t *testing.T) {
 	// var err error

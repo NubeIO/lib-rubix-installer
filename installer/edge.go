@@ -177,10 +177,6 @@ func (inst *App) ConfirmStoreAppVersionDir(appName, version string) bool {
 	return fileutils.DirExists(fmt.Sprintf("%s/apps/%s/%s", inst.GetStoreDir(), appName, version))
 }
 
-func (inst *App) ConfirmServiceFile(serviceName string) bool {
-	return fileutils.FileExists(fmt.Sprintf("%s/%s", inst.LibSystemPath, serviceName))
-}
-
 func (inst *App) GetAppVersion(appName string) string {
 	appName = setWiresName(appName)
 	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)

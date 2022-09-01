@@ -9,27 +9,16 @@ import (
 const filePerm = 0755
 const defaultTimeout = 30
 
-var libSystemPath = "/lib/systemd"
-var etcSystemPath = "/etc/systemd"
-
 type App struct {
-	Name             string `json:"name"`               // rubix-wires
-	Version          string `json:"version"`            // v1.1.1
-	DataDir          string `json:"data_dir"`           // /data
-	HostDownloadPath string `json:"host_download_path"` // home/user/downloads
-	StoreDir         string `json:"store_dir"`
-	TmpDir           string `json:"tmp_dir"` // /data/tmp
-	UserRubixHome    string `json:"user_rubix_home"`
-	FilePerm         int    `json:"file_perm"`       // file permissions
-	ServiceName      string `json:"service_name"`    // nubeio-rubix-wires
-	LibSystemPath    string `json:"lib_system_path"` // /lib/systemd/
-	EtcSystemPath    string `json:"etc_system_path"` // /etc/systemd/
-	DefaultTimeout   int    `json:"default_timeout"`
-	RubixServiceDir  string `json:"rubix_service_dir"`
-	AppsInstallDir   string `json:"apps_install_dir"` // /rubix-service/apps/install
-	AppsDownloadDir  string `json:"apps_download_dir"`
-	BackupsDir       string `json:"backups_dir"`
-	Ctl              *systemctl.SystemCtl
+	DataDir         string `json:"data_dir"`          // /data
+	StoreDir        string `json:"store_dir"`         // <data_dir>/store
+	TmpDir          string `json:"tmp_dir"`           // <data_dir>/tmp
+	FilePerm        int    `json:"file_perm"`         // 0755
+	DefaultTimeout  int    `json:"default_timeout"`   // 30
+	RubixServiceDir string `json:"rubix_service_dir"` // <data_dir>/rubix-service
+	AppsInstallDir  string `json:"apps_install_dir"`  // <data_dir>/rubix-service/apps/install
+	BackupsDir      string `json:"backups_dir"`       // ~/backup
+	SystemCtl       *systemctl.SystemCtl
 }
 
 func New(app *App) *App {
@@ -46,39 +35,21 @@ func New(app *App) *App {
 	if app.DefaultTimeout == 0 {
 		app.DefaultTimeout = defaultTimeout
 	}
-	if app.LibSystemPath == "" {
-		app.LibSystemPath = libSystemPath
-	}
-	if app.EtcSystemPath == "" {
-		app.EtcSystemPath = etcSystemPath
-	}
 	if app.StoreDir == "" {
 		app.StoreDir = filePath(fmt.Sprintf("%s/store", app.DataDir))
-	}
-	if app.UserRubixHome == "" {
-		app.HostDownloadPath = fmt.Sprintf("%s/rubix", homeDir)
-	}
-	if app.HostDownloadPath == "" {
-		app.HostDownloadPath = filePath(fmt.Sprintf("%s/Downloads", homeDir))
 	}
 	if app.RubixServiceDir == "" {
 		app.RubixServiceDir = filePath(fmt.Sprintf("%s/rubix-service", app.DataDir))
 	}
-	if app.AppsDownloadDir == "" {
-		app.AppsDownloadDir = filePath(fmt.Sprintf("%s/rubix-service/apps/download", app.DataDir))
-	}
 	if app.AppsInstallDir == "" {
 		app.AppsInstallDir = filePath(fmt.Sprintf("%s/rubix-service/apps/install", app.DataDir))
 	}
-	if app.AppsDownloadDir == "" {
-		app.AppsDownloadDir = filePath(fmt.Sprintf("%s/rubix-service/apps/download", app.DataDir))
-	}
 	if app.TmpDir == "" {
-		app.TmpDir = "/data/tmp"
+		app.TmpDir = filePath(fmt.Sprintf("%s/tmp", app.DataDir))
 	}
 	if app.BackupsDir == "" {
 		app.BackupsDir = fmt.Sprintf("%s/backup", homeDir)
 	}
-	app.Ctl = systemctl.New(false, app.DefaultTimeout)
+	app.SystemCtl = systemctl.New(false, app.DefaultTimeout)
 	return app
 }
