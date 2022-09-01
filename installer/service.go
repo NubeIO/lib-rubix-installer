@@ -9,7 +9,7 @@ import (
 
 func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) {
 	if app.ServiceName == "" {
-		return nil, errors.New("service name can not be empty, for example: nubeio-flow-framework.service")
+		return nil, errors.New("service_name can not be empty, for example: nubeio-flow-framework.service")
 	}
 	if app.Source == "" {
 		return nil, errors.New("service source file path can not be empty, for example: /data/tmp/tmp_b8cb4d888176/nubeio-flow-framework.service")
@@ -30,10 +30,10 @@ func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) 
 }
 
 // InstallService a new linux service
-//	- service: the service name (eg: nubeio-rubix-wires)
+//	- service: the service_name (eg: nubeio-rubix-wires)
 //	- path: the service file path and name (eg: "/tmp/rubix-bios.service")
-func (inst *App) installService(service, tmpServiceFile string) (*systemd.InstallResponse, error) {
-	systemdService := systemd.New(service, false, inst.DefaultTimeout)
+func (inst *App) installService(serviceName, tmpServiceFile string) (*systemd.InstallResponse, error) {
+	systemdService := systemd.New(serviceName, false, inst.DefaultTimeout)
 	err := systemdService.TransferSystemdFile(tmpServiceFile)
 	if err != nil {
 		fmt.Println(err)

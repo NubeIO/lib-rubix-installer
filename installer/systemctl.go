@@ -2,68 +2,90 @@ package installer
 
 import (
 	"errors"
+	"fmt"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
 )
 
 type CtlBody struct {
 	AppName      string   `json:"app_name"`
-	Service      string   `json:"service"`
+	ServiceName  string   `json:"service_name"`
 	Action       string   `json:"action"`
 	ServiceNames []string `json:"service_names"` // nubeio-flow-framework.service
 	AppNames     []string `json:"app_names"`     // flow-framework
 }
 
-func (inst *App) CtlAction(body *CtlBody) (*systemctl.SystemResponse, error) {
-	if body.AppName != "" { // if user passes in the appName then get the serviceFile
-		name, err := inst.GetNubeServiceFileName(body.AppName)
-		if err != nil {
-			return nil, err
-		}
-		body.Service = name
-	}
-	return inst.Ctl.CtlAction(body.Action, body.Service)
+type SystemResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
-func (inst *App) CtlStatus(body *CtlBody) (*systemctl.SystemState, error) {
-	if body.AppName != "" {
-		name, err := inst.GetNubeServiceFileName(body.AppName)
-		if err != nil {
-			return nil, err
-		}
-		body.Service = name
+type MassSystemResponse struct {
+	ServiceName string `json:"service_name"`
+	Success     bool   `json:"success"`
+	Message     string `json:"message"`
+}
+
+func (inst *App) SystemCtlAction(body *CtlBody) (*SystemResponse, error) {
+	resp := &SystemResponse{}
+	if body.ServiceName == "" {
+		return nil, errors.New("service_name can not be empty")
 	}
-	resp, err := inst.Ctl.ServiceState(body.Service)
+	var err error
+	switch body.Action {
+	case "start":
+		err = inst.Ctl.Start(body.ServiceName)
+	case "stop":
+		err = inst.Ctl.Stop(body.ServiceName)
+	case "enable":
+		err = inst.Ctl.Enable(body.ServiceName)
+	case "disable":
+		err = inst.Ctl.Disable(body.ServiceName)
+	case "restart":
+		err = inst.Ctl.Restart(body.ServiceName)
+	default:
+		err = errors.New("no valid action found try, start, stop, restart, enable or disable")
+	}
+	if err != nil {
+		resp.Success = false
+		resp.Message = err.Error()
+	} else {
+		resp.Success = true
+		resp.Message = fmt.Sprintf("service: %s, action: %s is executed succefully", body.ServiceName, body.Action)
+	}
+	return resp, nil
+}
+
+func (inst *App) SystemCtlStatus(body *CtlBody) (*systemctl.SystemState, error) {
+	if body.ServiceName == "" {
+		return nil, errors.New("service_name can not be empty")
+	}
+	resp, err := inst.Ctl.State(body.ServiceName)
 	return &resp, err
 }
 
-func (inst *App) ServiceMassAction(body *CtlBody) ([]systemctl.MassSystemResponse, error) {
-	if len(body.AppNames) > 0 {
-		for _, name := range body.AppNames { // if user passes in the appName then get the serviceFile
-			serviceName, err := inst.GetNubeServiceFileName(name)
-			if err != nil {
-				return nil, err
-			}
-			body.ServiceNames = append(body.ServiceNames, serviceName)
-		}
-	}
+func (inst *App) ServiceMassAction(body *CtlBody) ([]MassSystemResponse, error) {
 	if len(body.ServiceNames) == 0 {
-		return nil, errors.New("no services names provided")
+		return nil, errors.New("no service_names provided")
 	}
-	return inst.Ctl.ServiceMassAction(body.ServiceNames, body.Action)
+	var outputs []MassSystemResponse
+	for _, serviceName := range body.ServiceNames {
+		body.ServiceName = serviceName
+		response, _ := inst.SystemCtlAction(body)
+		output := MassSystemResponse{ServiceName: serviceName, Success: response.Success, Message: response.Message}
+		outputs = append(outputs, output)
+	}
+	return outputs, nil
 }
 
 func (inst *App) ServiceMassStatus(body *CtlBody) ([]systemctl.SystemState, error) {
-	if len(body.AppNames) > 0 {
-		for _, name := range body.AppNames {
-			serviceName, err := inst.GetNubeServiceFileName(name)
-			if err != nil {
-				return nil, err
-			}
-			body.ServiceNames = append(body.ServiceNames, serviceName)
-		}
-	}
 	if len(body.ServiceNames) == 0 {
-		return nil, errors.New("no services names provided")
+		return nil, errors.New("no service_names provided")
 	}
-	return inst.Ctl.ServiceStateMass(body.ServiceNames)
+	var outputs []systemctl.SystemState
+	for _, serviceName := range body.ServiceNames {
+		body.ServiceName = serviceName
+		response, _ := inst.SystemCtlStatus(body)
+		outputs = append(outputs, *response)
+	}
+	return outputs, nil
 }
