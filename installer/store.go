@@ -25,7 +25,7 @@ func (inst *App) MakeStoreDir() error {
 	if err := checkDir(inst.DataDir); err != nil {
 		return errors.New(fmt.Sprintf("store dir not exists %s", inst.DataDir))
 	}
-	return makeDirectoryIfNotExists(inst.StoreDir, os.FileMode(inst.FilePerm))
+	return makeDirectoryIfNotExists(inst.StoreDir, os.FileMode(inst.FileMode))
 }
 
 // MakeStoreApps  => /data/store/apps
@@ -33,5 +33,5 @@ func (inst *App) MakeStoreApps() error {
 	if err := checkDir(inst.GetStoreDir()); err != nil {
 		return errors.New(fmt.Sprintf("store/apps not exists %s", inst.GetStoreDir()))
 	}
-	return makeDirectoryIfNotExists(fmt.Sprintf("%s/apps", inst.StoreDir), os.FileMode(inst.FilePerm))
+	return makeDirectoryIfNotExists(fmt.Sprintf("%s/apps", inst.StoreDir), os.FileMode(inst.FileMode))
 }

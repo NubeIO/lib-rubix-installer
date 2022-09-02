@@ -17,7 +17,7 @@ func Test_readZip(t *testing.T) {
 func Test_BackupApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	back, err := app.BackupApp(appName, "testDevice1234")
 	fmt.Println(err)
 	if err != nil {
@@ -29,7 +29,7 @@ func Test_BackupApp(t *testing.T) {
 func Test_FullBackUp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	back, err := app.FullBackUp("testDevice1234")
 	fmt.Println(err)
 	if err != nil {
@@ -41,7 +41,7 @@ func Test_FullBackUp(t *testing.T) {
 func Test_ListFullBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListFullBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -50,7 +50,7 @@ func Test_ListFullBackups(t *testing.T) {
 func Test_ListAppBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListAppBackupsDirs()
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -59,7 +59,7 @@ func Test_ListAppBackups(t *testing.T) {
 func Test_ListBackupsByApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListBackupsByApp(appName)
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -68,7 +68,7 @@ func Test_ListBackupsByApp(t *testing.T) {
 func Test_DeleteAllBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.WipeBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
@@ -77,7 +77,7 @@ func Test_DeleteAllBackups(t *testing.T) {
 func Test_DeleteAppAllBackUpByName(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.DeleteAppAllBackUpByName(appName)
 	fmt.Println(err)
 	if err != nil {
@@ -89,7 +89,7 @@ func Test_DeleteAppAllBackUpByName(t *testing.T) {
 func Test_DeleteAppBackUp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	byApp, err := app.ListBackupsByApp(appName)
 	fmt.Println(err)
 	if err != nil {

@@ -142,7 +142,7 @@ func (inst *App) uploadServiceFile(appName, version string, file *multipart.File
 func (inst *App) unzip(source, destination string) ([]string, error) {
 	source = filePath(source)
 	destination = filePath(destination)
-	return fileutils.UnZip(source, destination, os.FileMode(inst.FilePerm))
+	return fileutils.UnZip(source, destination, os.FileMode(inst.FileMode))
 }
 
 // SaveUploadedFile uploads the form file to specific dst.

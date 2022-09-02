@@ -6,14 +6,14 @@ import (
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
 )
 
-const filePerm = 0755
+const fileMode = 0755
 const defaultTimeout = 30
 
 type App struct {
 	DataDir         string `json:"data_dir"`          // /data
 	StoreDir        string `json:"store_dir"`         // <data_dir>/store
 	TmpDir          string `json:"tmp_dir"`           // <data_dir>/tmp
-	FilePerm        int    `json:"file_perm"`         // 0755
+	FileMode        int    `json:"file_mode"`         // 0755
 	DefaultTimeout  int    `json:"default_timeout"`   // 30
 	RubixServiceDir string `json:"rubix_service_dir"` // <data_dir>/rubix-service
 	AppsInstallDir  string `json:"apps_install_dir"`  // <data_dir>/rubix-service/apps/install
@@ -29,8 +29,8 @@ func New(app *App) *App {
 	if app.DataDir == "" {
 		app.DataDir = filePath("/data")
 	}
-	if app.FilePerm == 0 {
-		app.FilePerm = filePerm
+	if app.FileMode == 0 {
+		app.FileMode = fileMode
 	}
 	if app.DefaultTimeout == 0 {
 		app.DefaultTimeout = defaultTimeout

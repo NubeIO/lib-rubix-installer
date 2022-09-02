@@ -74,7 +74,7 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 					if err != nil {
 						return nil, errors.New(fmt.Sprintf("install edge app rename file err: %s", err.Error()))
 					}
-					os.Chmod(newFile, os.FileMode(inst.FilePerm))
+					os.Chmod(newFile, os.FileMode(inst.FileMode))
 				}
 			}
 		}

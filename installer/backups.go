@@ -327,7 +327,7 @@ func (inst *App) FullBackUp(deiceName ...string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FilePerm))
+	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FileMode))
 	if err != nil {
 		return "", err
 	}
@@ -358,7 +358,7 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FilePerm))
+	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FileMode))
 	if err != nil {
 		return "", err
 	}
@@ -378,7 +378,7 @@ func (inst *App) MakeBackupTmpDirUpload() (string, error) {
 		return "", err
 	}
 	tmpDir := fmt.Sprintf("%s/tmp/%s", home, uuid.ShortUUID("tmp"))
-	err = makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FilePerm))
+	err = makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FileMode))
 	return tmpDir, err
 }
 
