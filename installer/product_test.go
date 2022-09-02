@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGetProduct(t *testing.T) {
+func Test_GetProduct(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm})

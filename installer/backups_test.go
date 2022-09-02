@@ -38,7 +38,7 @@ func Test_FullBackUp(t *testing.T) {
 	fmt.Println(back)
 }
 
-func TestApp_ListFullBackups(t *testing.T) {
+func Test_ListFullBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
@@ -47,7 +47,7 @@ func TestApp_ListFullBackups(t *testing.T) {
 	fmt.Println(backs)
 }
 
-func TestApp_ListAppBackups(t *testing.T) {
+func Test_ListAppBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
@@ -56,7 +56,7 @@ func TestApp_ListAppBackups(t *testing.T) {
 	fmt.Println(backs)
 }
 
-func TestApp_ListBackupsByApp(t *testing.T) {
+func Test_ListBackupsByApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
@@ -65,7 +65,7 @@ func TestApp_ListBackupsByApp(t *testing.T) {
 	fmt.Println(backs)
 }
 
-func TestApp_DeleteAllBackups(t *testing.T) {
+func Test_DeleteAllBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
@@ -74,7 +74,7 @@ func TestApp_DeleteAllBackups(t *testing.T) {
 	fmt.Println(backs)
 }
 
-func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
+func Test_DeleteAppAllBackUpByName(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
@@ -86,7 +86,7 @@ func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
 	fmt.Println(backs)
 }
 
-func TestApp_DeleteAppBackUp(t *testing.T) {
+func Test_DeleteAppBackUp(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
