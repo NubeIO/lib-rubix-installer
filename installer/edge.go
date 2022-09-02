@@ -9,7 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 type AppResponse struct {
@@ -44,87 +43,36 @@ func (inst *App) ListApps() ([]Apps, error) {
 	return apps, err
 }
 
-// ListAppsAndService get all the apps by listed in the installation (/data/rubix-service/apps/install) dir and then check the service
-func (inst *App) ListAppsAndService() ([]InstalledServices, error) {
+type AppsStatus struct {
+	AppName     string                 `json:"app_name,omitempty"`
+	Version     string                 `json:"version,omitempty"`
+	ServiceName string                 `json:"service_name,omitempty"`
+	AppState    *systemctl.SystemState `json:"app_state,omitempty"`
+}
+
+// ListAppsStatus get all the apps by listed in the installation (/data/rubix-service/apps/install) dir and then check the service
+func (inst *App) ListAppsStatus(appServiceMapping map[string]string) ([]AppsStatus, error) {
 	apps, err := inst.ListApps()
 	if err != nil {
 		return nil, err
 	}
-	var installedServices []InstalledServices
-	var installedService InstalledServices
+	var installedServices []AppsStatus
 	for _, app := range apps {
-		name, err := inst.GetNubeServiceFileName(app.Name)
-		if err != nil {
-			return nil, err
-		}
-		systemCtl := systemctl.New(false, inst.DefaultTimeout)
+		var installedService AppsStatus
 		installedService.AppName = app.Name
-		installedService.ServiceName = name
-		installed, err := systemCtl.State(name)
-		if err != nil {
-			log.Errorf("service is not isntalled: %s", name)
+		installedService.Version = app.Version
+		serviceName, exist := appServiceMapping[app.Name]
+		if exist {
+			installedService.ServiceName = serviceName
+			installed, err := inst.SystemCtl.State(serviceName)
+			if err != nil {
+				log.Errorf("service is not intalled: %s", serviceName)
+			}
+			installedService.AppState = &installed
 		}
-		installedService.AppStatus = installed
 		installedServices = append(installedServices, installedService)
 	}
 	return installedServices, nil
-}
-
-type InstalledServices struct {
-	AppName     string                `json:"app_name,omitempty"`
-	ServiceName string                `json:"service_name,omitempty"`
-	AppStatus   systemctl.SystemState `json:"app_status,omitempty"`
-}
-
-// ListNubeServices list all the services by filtering all the service files with name nubeio
-func (inst *App) ListNubeServices() ([]InstalledServices, error) {
-	files, err := inst.ListNubeServiceFiles()
-	var installedServices []InstalledServices
-	var installedService InstalledServices
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		systemCtl := systemctl.New(false, inst.DefaultTimeout)
-		installedService.ServiceName = file
-		installed, err := systemCtl.State(file)
-		if err != nil {
-			log.Errorf("service is not isntalled: %s", file)
-		}
-		installedService.AppStatus = installed
-		installedServices = append(installedServices, installedService)
-	}
-	return installedServices, err
-}
-
-func (inst *App) ListNubeServiceFiles() ([]string, error) {
-	var resp []string
-	files, err := inst.listFiles("/lib/systemd/system")
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		if strings.Contains(file, "nubeio") {
-			resp = append(resp, file)
-		}
-	}
-	return resp, err
-}
-
-func (inst *App) GetNubeServiceFileName(appName string) (string, error) {
-	var resp string
-	files, err := inst.listFiles("/lib/systemd/system")
-	if err != nil {
-		return "", err
-	}
-	for _, file := range files {
-		if strings.Contains(file, "nubeio") {
-			if strings.Contains(file, appName) {
-				resp = file
-			}
-		}
-	}
-	return resp, err
 }
 
 func (inst *App) ConfirmAppInstalled(appName string, serviceFileName string) (*AppResponse, error) {

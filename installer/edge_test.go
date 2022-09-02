@@ -8,15 +8,6 @@ import (
 
 var appName = "flow-framework"
 
-func Test_ConfirmAppInstalled(t *testing.T) {
-	// var err error
-	// fmt.Println(err)
-	// app := New(&App{DataDir: "/data", FilePerm: nonRoot})
-	// installed, err := app.ConfirmAppInstalled(appName, serviceName)
-	// fmt.Println(err)
-	// pprint.PrintJSON(installed)
-}
-
 func Test_GetAppVersion(t *testing.T) {
 	var err error
 	fmt.Println(err)
@@ -25,7 +16,7 @@ func Test_GetAppVersion(t *testing.T) {
 	fmt.Println(version)
 }
 
-func Test_GetApps(t *testing.T) {
+func Test_ListApps(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm})
@@ -37,45 +28,13 @@ func Test_GetApps(t *testing.T) {
 	pprint.PrintJSON(installed)
 }
 
-func Test_ListNubeServicesFiles(t *testing.T) {
+func Test_ListAppsStatus(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FilePerm: filePerm})
-	installed, err := app.ListNubeServiceFiles()
-	fmt.Println(err)
-	if err != nil {
-		return
-	}
-	pprint.PrintJSON(installed)
-}
-func Test_getNubeServiceFileName(t *testing.T) {
-	var err error
-	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm})
-	installed, err := app.GetNubeServiceFileName(appName)
-	fmt.Println(err)
-	if err != nil {
-		return
-	}
-	pprint.PrintJSON(installed)
-}
-func Test_ListNubeServices(t *testing.T) {
-	var err error
-	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm})
-	installed, err := app.ListNubeServices()
-	fmt.Println(installed, err)
-	if err != nil {
-		return
-	}
-	pprint.PrintJSON(installed)
-}
-
-func Test_ListAppsAndService(t *testing.T) {
-	var err error
-	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm})
-	installed, err := app.ListAppsAndService()
+	appServiceMapping := map[string]string{}
+	appServiceMapping["flow-framework"] = "nubeio-flow-framework.service"
+	installed, err := app.ListAppsStatus(appServiceMapping)
 	fmt.Println(installed, err)
 	if err != nil {
 		return
