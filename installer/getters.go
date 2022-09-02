@@ -6,20 +6,6 @@ import (
 	"path/filepath"
 )
 
-func setWiresName(appName string) string {
-	if appName == "rubix-wires" {
-		appName = "wires-builds"
-	}
-	return appName
-}
-
-func setWiresBuildName(appName string) string {
-	if appName == "wires-builds" {
-		appName = "rubix-wires"
-	}
-	return appName
-}
-
 // filePath make the file path work for unix or windows
 func filePath(path string, debug ...bool) string {
 	updated := filepath.FromSlash(path)
@@ -49,13 +35,11 @@ func (inst *App) getAppDataPath(appName string) string {
 
 // GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
 func (inst *App) GetAppInstallPath(appName string) string {
-	appName = setWiresName(appName)
 	return inst.getAppInstallPath(appName)
 }
 
 // GetAppInstallPath get the full app install path and version => /data/rubix-service/apps/install/wires-builds
 func (inst *App) getAppInstallPath(appName string) string {
-	appName = setWiresName(appName)
 	return filePath(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
 }
 
@@ -71,12 +55,10 @@ func (inst *App) GetStoreAppPathAndVersion(appName, version string) string {
 
 // GetAppInstallPathAndVersion get the full app install path and version => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) GetAppInstallPathAndVersion(appName, version string) string {
-	appName = setWiresName(appName)
 	return inst.getAppInstallPathAndVersion(appName, version)
 }
 
 // GetAppInstallPathAndVersion get the full app install path and version => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) getAppInstallPathAndVersion(appName, version string) string {
-	appName = setWiresName(appName)
 	return filePath(fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appName, version))
 }

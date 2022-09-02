@@ -10,11 +10,12 @@ import (
 )
 
 type Install struct {
-	Name             string `json:"name"`
-	ServiceName      string `json:"service_name"`
-	Version          string `json:"version"`
-	Source           string `json:"source"`
-	DeleteAppDataDir bool   `json:"delete_app_data_dir"` // this will delete for example the db, plugins and config
+	Name                  string `json:"name"`
+	ServiceName           string `json:"service_name"`
+	Version               string `json:"version"`
+	Source                string `json:"source"`
+	DoNothingOnExtraction bool   `json:"do_nothing_on_extraction"`
+	DeleteAppDataDir      bool   `json:"delete_app_data_dir"` // this will delete for example the db, plugins and config
 }
 
 type Response struct {
@@ -51,13 +52,14 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	destination := inst.getAppInstallPathAndVersion(app.Name, app.Version)
 	log.Infof("app zip source: %s", app.Source)
 	log.Infof("app zip destination: %s", destination)
-	// unzip the build to the app dir  /data/rubix-service/install/wires-build
+	// unzip the build to the app dir  /data/rubix-service/install/apps/<name>/<version>
 	_, err = inst.unzip(app.Source, destination) // unzip the build
 	if err != nil {
 		log.Errorf("install edge app unzip source: %s dest: %s err: %s", app.Source, destination, err.Error())
 		return nil, errors.New(fmt.Sprintf("install edge app unzip err: %s", err.Error()))
 	}
-	if app.Name != "rubix-wires" {
+	// rename the extracted file into app, it's only for those apps which is not frontend and executable
+	if !app.DoNothingOnExtraction {
 		files, err := inst.listFiles(destination)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("install edge app list files err: %s", err.Error()))
@@ -66,14 +68,13 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 			for _, file := range files {
 				existingFile := fmt.Sprintf("%s/%s", destination, file)
 				newFile := fmt.Sprintf("%s/app", destination)
-				log.Infof("RENAME BUILD-EXISTSING %s", existingFile)
-				log.Infof("RENAME BUILD-NEW %s", newFile)
+				log.Infof("Existing file: %s renaming into: %s", existingFile, newFile)
 				if knownBuildNames(file) {
 					err = inst.MoveFile(existingFile, newFile, true) // rename the build
-					os.Chmod(newFile, os.FileMode(inst.FilePerm))
 					if err != nil {
 						return nil, errors.New(fmt.Sprintf("install edge app rename file err: %s", err.Error()))
 					}
+					os.Chmod(newFile, os.FileMode(inst.FilePerm))
 				}
 			}
 		}

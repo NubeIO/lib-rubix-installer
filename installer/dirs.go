@@ -85,15 +85,12 @@ func (inst *App) MakeTmpDirUpload() (string, error) {
 }
 
 // MakeAppInstallDir  => /data/rubix-service/apps/install/wires-builds
-func (inst *App) MakeAppInstallDir(appBuildName string, removeExisting ...bool) error {
-	if err := emptyPath(appBuildName); err != nil {
+func (inst *App) MakeAppInstallDir(appName string, removeExisting ...bool) error {
+	if err := emptyPath(appName); err != nil {
 		return err
 	}
-	if appBuildName == "rubix-wires" {
-		appBuildName = "wires-builds"
-	}
 
-	appInstallDir := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appBuildName)
+	appInstallDir := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
 	if len(removeExisting) > 0 {
 		if removeExisting[0] {
 			err := fileutils.RmRF(appInstallDir)
@@ -112,9 +109,6 @@ func (inst *App) MakeAppVersionDir(appName, version string) error {
 	}
 	if err := checkVersion(version); err != nil {
 		return err
-	}
-	if appName == "rubix-wires" {
-		appName = "wires-builds"
 	}
 	appDir := fmt.Sprintf("%s/%s/%s", inst.AppsInstallDir, appName, version)
 	return makeDirectoryIfNotExists(appDir, os.FileMode(inst.FilePerm))

@@ -12,12 +12,13 @@ import (
 )
 
 type Upload struct {
-	Name        string                `json:"name"`
-	ServiceName string                `json:"service_name"`
-	Version     string                `json:"version"`
-	Product     string                `json:"product"`
-	Arch        string                `json:"arch"`
-	File        *multipart.FileHeader `json:"file"`
+	Name              string                `json:"name"`
+	ServiceName       string                `json:"service_name"`
+	Version           string                `json:"version"`
+	Product           string                `json:"product"`
+	Arch              string                `json:"arch"`
+	DoNotValidateArch bool                  `json:"do_not_validate_arch"`
+	File              *multipart.FileHeader `json:"file"`
 }
 
 type UploadResponse struct {
@@ -62,7 +63,7 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if app.ServiceName == "" {
 		return nil, errors.New("app service_file_name can not be empty")
 	}
-	if app.Name != "rubix-wires" { // wires don't care about the arch
+	if !app.DoNotValidateArch { // wires don't care about the arch
 		err := inst.CompareBuildToArch(app.File.Filename, app.Product)
 		if err != nil {
 			return nil, err

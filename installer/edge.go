@@ -39,7 +39,6 @@ func (inst *App) ListApps() ([]Apps, error) {
 		app.Name = file.Name()
 		app.Version = inst.GetAppVersion(app.Name)
 		app.Path = fmt.Sprintf("%s/apps/%s", rootDir, file.Name())
-		app.Name = setWiresBuildName(app.Name)
 		apps = append(apps, app)
 	}
 	return apps, err
@@ -153,7 +152,6 @@ func (inst *App) ConfirmAppDir(appName string) bool {
 }
 
 func (inst *App) ConfirmAppInstallDir(appName string) bool {
-	appName = setWiresName(appName)
 	return fileutils.DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
 }
 
@@ -178,7 +176,6 @@ func (inst *App) ConfirmStoreAppVersionDir(appName, version string) bool {
 }
 
 func (inst *App) GetAppVersion(appName string) string {
-	appName = setWiresName(appName)
 	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
 	fileInfo, err := os.Stat(file)
 	if err != nil {
