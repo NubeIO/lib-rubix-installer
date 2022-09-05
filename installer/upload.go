@@ -58,7 +58,7 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 		return nil, errors.New("arch type can not be empty, try armv7 amd64")
 	}
 	if app.Product == "" {
-		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute, Server, Edge28, Nuc")
+		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
 	if app.ServiceName == "" {
 		return nil, errors.New("app service_file_name can not be empty")
