@@ -61,7 +61,7 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
 	if app.ServiceName == "" {
-		return nil, errors.New("app service_file_name can not be empty")
+		return nil, errors.New("app service_name can not be empty")
 	}
 	if !app.DoNotValidateArch { // wires don't care about the arch
 		err := inst.CompareBuildToArch(app.File.Filename, app.Product)

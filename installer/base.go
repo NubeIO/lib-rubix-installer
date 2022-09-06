@@ -15,6 +15,7 @@ type App struct {
 	TmpDir          string `json:"tmp_dir"`           // <data_dir>/tmp
 	FileMode        int    `json:"file_mode"`         // 0755
 	DefaultTimeout  int    `json:"default_timeout"`   // 30
+	UserRubixHome   string `json:"user_rubix_home"`   // ~/rubix
 	RubixServiceDir string `json:"rubix_service_dir"` // <data_dir>/rubix-service
 	AppsInstallDir  string `json:"apps_install_dir"`  // <data_dir>/rubix-service/apps/install
 	BackupsDir      string `json:"backups_dir"`       // ~/backup
@@ -37,6 +38,9 @@ func New(app *App) *App {
 	}
 	if app.StoreDir == "" {
 		app.StoreDir = filePath(fmt.Sprintf("%s/store", app.DataDir))
+	}
+	if app.UserRubixHome == "" {
+		app.UserRubixHome = fmt.Sprintf("%s/rubix", homeDir)
 	}
 	if app.RubixServiceDir == "" {
 		app.RubixServiceDir = filePath(fmt.Sprintf("%s/rubix-service", app.DataDir))

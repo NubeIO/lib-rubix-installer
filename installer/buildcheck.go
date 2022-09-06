@@ -72,7 +72,7 @@ func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
 }
 
 // GetBuildZipNameByArch // get a build by its arch
-func (inst *App) GetBuildZipNameByArch(path, arch string, dontCheckArch bool) (*BuildDetails, error) {
+func (inst *App) GetBuildZipNameByArch(path, arch string, doNotValidateArch bool) (*BuildDetails, error) {
 	var out *BuildDetails
 	details, err := getFileDetails(path)
 	if err != nil {
@@ -83,7 +83,7 @@ func (inst *App) GetBuildZipNameByArch(path, arch string, dontCheckArch bool) (*
 		if app.MatchedArch == arch {
 			out = app
 		}
-		if dontCheckArch { // most likely rubix-wires as it has no arch
+		if doNotValidateArch { // most likely rubix-wires as it has no arch
 			out = app
 		}
 	}
