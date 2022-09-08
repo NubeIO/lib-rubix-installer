@@ -140,8 +140,6 @@ func (inst *App) uploadServiceFile(appName, version string, file *multipart.File
 }
 
 func (inst *App) unzip(source, destination string) ([]string, error) {
-	source = filePath(source)
-	destination = filePath(destination)
 	return fileutils.UnZip(source, destination, os.FileMode(inst.FileMode))
 }
 
@@ -151,7 +149,6 @@ func (inst *App) unzip(source, destination string) ([]string, error) {
 func (inst *App) SaveUploadedFile(file *multipart.FileHeader, dest string) (destination string, err error) {
 	destination = fmt.Sprintf("%s/%s", dest, file.Filename)
 	fmt.Println("SaveUploadedFile dest", destination)
-	destination = filePath(destination)
 	src, err := file.Open()
 	if err != nil {
 		return destination, err

@@ -18,7 +18,7 @@ func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) 
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no service file found in path: %s", app.Source))
 	}
-	found = inst.ConfirmAppDir(app.Name)
+	found = inst.ConfirmAppDataDir(app.Name)
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no app dir found for provided app: %s", app.Name))
 	}

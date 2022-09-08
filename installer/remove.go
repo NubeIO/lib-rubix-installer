@@ -52,9 +52,9 @@ func (inst *App) UninstallApp(appName string, serviceName string, deleteAppDataD
 }
 
 func (inst *App) DeleteAppData(appName string) error {
-	return fileutils.RmRF(inst.getAppDataPath(appName))
+	return fileutils.RmRF(inst.GetAppDataPath(appName))
 }
 
 func (inst *App) DeleteAppInstall(appName string) error {
-	return fileutils.RmRF(inst.getAppInstallPath(appName))
+	return fileutils.RmRF(inst.GetAppInstallPath(appName))
 }

@@ -15,6 +15,12 @@ type BuildDetails struct {
 	ZipName        string `json:"zip_name,omitempty"`
 }
 
+type FileDetails struct {
+	Name      string `json:"name"`
+	Extension string `json:"extension"`
+	IsDir     bool   `json:"is_dir"`
+}
+
 func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
 	parts := strings.Split(zipName, "-")
 	count := 0
@@ -104,19 +110,13 @@ func (inst *App) GetBuildZipNames(path string) ([]BuildDetails, error) {
 	return out, nil
 }
 
-type fileDetails struct {
-	Name      string `json:"name"`
-	Extension string `json:"extension"`
-	IsDir     bool   `json:"is_dir"`
-}
-
-func getFileDetails(dir string) ([]fileDetails, error) {
+func getFileDetails(dir string) ([]FileDetails, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
-	var out []fileDetails
-	var f fileDetails
+	var out []FileDetails
+	var f FileDetails
 	for _, file := range files {
 		var extension = filepath.Ext(file.Name())
 		f.Extension = extension

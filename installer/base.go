@@ -1,9 +1,9 @@
 package installer
 
 import (
-	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
+	"path"
 )
 
 const fileMode = 0755
@@ -28,7 +28,7 @@ func New(app *App) *App {
 		app = &App{}
 	}
 	if app.DataDir == "" {
-		app.DataDir = filePath("/data")
+		app.DataDir = "/data"
 	}
 	if app.FileMode == 0 {
 		app.FileMode = fileMode
@@ -37,22 +37,22 @@ func New(app *App) *App {
 		app.DefaultTimeout = defaultTimeout
 	}
 	if app.StoreDir == "" {
-		app.StoreDir = filePath(fmt.Sprintf("%s/store", app.DataDir))
+		app.StoreDir = path.Join(app.DataDir, "store")
 	}
 	if app.UserRubixHome == "" {
-		app.UserRubixHome = fmt.Sprintf("%s/rubix", homeDir)
+		app.UserRubixHome = path.Join(homeDir, "rubix")
 	}
 	if app.RubixServiceDir == "" {
-		app.RubixServiceDir = filePath(fmt.Sprintf("%s/rubix-service", app.DataDir))
+		app.RubixServiceDir = path.Join(app.DataDir, "rubix-service")
 	}
 	if app.AppsInstallDir == "" {
-		app.AppsInstallDir = filePath(fmt.Sprintf("%s/rubix-service/apps/install", app.DataDir))
+		app.AppsInstallDir = path.Join(app.DataDir, "rubix-service/apps/install")
 	}
 	if app.TmpDir == "" {
-		app.TmpDir = filePath(fmt.Sprintf("%s/tmp", app.DataDir))
+		app.TmpDir = path.Join(app.DataDir, "tmp")
 	}
 	if app.BackupsDir == "" {
-		app.BackupsDir = fmt.Sprintf("%s/backup", homeDir)
+		app.BackupsDir = path.Join(homeDir, "backup")
 	}
 	app.SystemCtl = systemctl.New(false, app.DefaultTimeout)
 	return app

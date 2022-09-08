@@ -49,7 +49,7 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 		return nil, errors.New(fmt.Sprintf("install edge app make dirs: %s", err.Error()))
 	}
 	log.Infof("made all dirs succefully for app: %s, version: %s", app.Name, app.Version)
-	destination := inst.getAppInstallPathAndVersion(app.Name, app.Version)
+	destination := inst.GetAppInstallPathAndVersion(app.Name, app.Version)
 	log.Infof("app zip source: %s", app.Source)
 	log.Infof("app zip destination: %s", destination)
 	// unzip the build to the app dir  /data/rubix-service/install/apps/<name>/<version>

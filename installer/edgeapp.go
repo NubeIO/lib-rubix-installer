@@ -3,7 +3,6 @@ package installer
 import (
 	"errors"
 	"fmt"
-	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
 	"github.com/NubeIO/lib-systemctl-go/systemd"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +24,13 @@ type Apps struct {
 	Path    string `json:"path,omitempty"`
 }
 
+type AppsStatus struct {
+	AppName     string                 `json:"app_name,omitempty"`
+	Version     string                 `json:"version,omitempty"`
+	ServiceName string                 `json:"service_name,omitempty"`
+	AppState    *systemctl.SystemState `json:"app_state,omitempty"`
+}
+
 // ListApps apps by listed in the installation (/data/rubix-service/apps/install)
 func (inst *App) ListApps() ([]Apps, error) {
 	rootDir := inst.AppsInstallDir
@@ -41,13 +47,6 @@ func (inst *App) ListApps() ([]Apps, error) {
 		apps = append(apps, app)
 	}
 	return apps, err
-}
-
-type AppsStatus struct {
-	AppName     string                 `json:"app_name,omitempty"`
-	Version     string                 `json:"version,omitempty"`
-	ServiceName string                 `json:"service_name,omitempty"`
-	AppState    *systemctl.SystemState `json:"app_state,omitempty"`
 }
 
 // ListAppsStatus get all the apps by listed in the installation (/data/rubix-service/apps/install) dir and then check the service
@@ -93,34 +92,6 @@ func (inst *App) ConfirmAppInstalled(appName string, serviceFileName string) (*A
 		Version:   version,
 		AppStatus: &state,
 	}, err
-}
-
-func (inst *App) ConfirmAppDir(appName string) bool {
-	return fileutils.DirExists(fmt.Sprintf("%s/%s", inst.DataDir, appName))
-}
-
-func (inst *App) ConfirmAppInstallDir(appName string) bool {
-	return fileutils.DirExists(fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName))
-}
-
-func (inst *App) DirExists(dir string) bool {
-	return fileutils.DirExists(dir)
-}
-
-func (inst *App) FileExists(dir string) bool {
-	return fileutils.FileExists(dir)
-}
-
-func (inst *App) ConfirmStoreDir() bool {
-	return fileutils.DirExists(inst.GetStoreDir())
-}
-
-func (inst *App) ConfirmStoreAppDir(appName string) bool {
-	return fileutils.DirExists(fmt.Sprintf("%s/apps/%s", inst.GetStoreDir(), appName))
-}
-
-func (inst *App) ConfirmStoreAppVersionDir(appName, version string) bool {
-	return fileutils.DirExists(fmt.Sprintf("%s/apps/%s/%s", inst.GetStoreDir(), appName, version))
 }
 
 func (inst *App) GetAppVersion(appName string) string {

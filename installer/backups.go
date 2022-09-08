@@ -21,10 +21,6 @@ type RestoreResponse struct {
 	TakeBackupPath string `json:"take_backup_path,omitempty"`
 }
 
-/*
-RESTORE A BACK-UPS
-*/
-
 type RestoreBackup struct {
 	AppName      string                `json:"app_name"`
 	DeviceName   string                `json:"device_name"`
@@ -32,6 +28,10 @@ type RestoreBackup struct {
 	RebootDevice bool                  `json:"reboot_device"`
 	File         *multipart.FileHeader `json:"file"`
 }
+
+/*
+RESTORE A BACK-UPS
+*/
 
 // RestoreBackup restore a backup data dir /data
 func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
@@ -345,7 +345,7 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 	if appName == "" {
 		return "", errors.New("app name can not be empty")
 	}
-	found := inst.ConfirmAppDir(appName)
+	found := inst.ConfirmAppDataDir(appName)
 	if !found {
 		return "", errors.New(fmt.Sprintf("failed to find app: %s", appName))
 	}

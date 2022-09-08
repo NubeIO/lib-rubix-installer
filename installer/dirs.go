@@ -31,7 +31,7 @@ func (inst *App) DirsInstallApp(appName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.getAppDataPath(appName)), os.FileMode(inst.FileMode)) // make the app config dir
+	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.GetAppDataPath(appName)), os.FileMode(inst.FileMode)) // make the app config dir
 	log.Infof("install app edge: MakeDirectoryIfNotExists app: %s", appName)
 	if err != nil {
 		return err
@@ -164,7 +164,6 @@ func (inst *App) MkdirAll(path string, perm os.FileMode) error {
 
 // mkdirAll all dirs
 func mkdirAll(path string, perm os.FileMode) error {
-	path = filePath(path)
 	err := os.MkdirAll(path, perm)
 	if err != nil {
 		return errors.New(fmt.Sprintf("path %s, err: %s", path, err.Error()))
@@ -174,7 +173,6 @@ func mkdirAll(path string, perm os.FileMode) error {
 
 // makeDirectoryIfNotExists if not exist make dir
 func makeDirectoryIfNotExists(path string, perm os.FileMode) error {
-	path = filePath(path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return mkdirAll(path, os.ModeDir|perm)
 	}
@@ -196,7 +194,6 @@ func emptyPath(path string) error {
 }
 
 func checkDir(path string) error {
-	path = filePath(path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return err
 	}
