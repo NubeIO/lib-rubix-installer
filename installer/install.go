@@ -3,6 +3,7 @@ package installer
 import (
 	"errors"
 	"fmt"
+	"github.com/NubeIO/lib-files/fileutils"
 	"github.com/NubeIO/lib-systemctl-go/systemd"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -11,7 +12,6 @@ import (
 
 type Install struct {
 	Name                  string `json:"name"`
-	ServiceName           string `json:"service_name"`
 	Version               string `json:"version"`
 	Source                string `json:"source"`
 	DoNothingOnExtraction bool   `json:"do_nothing_on_extraction"`
@@ -33,23 +33,21 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	if app.Version == "" {
 		return nil, errors.New("app version can not be empty")
 	}
-	if app.ServiceName == "" {
-		return nil, errors.New("app service_name can not be empty")
-	}
 	if app.Source == "" {
 		return nil, errors.New("app build source can not be empty, try: /data/tmp/tmp_1223/flow-framework.zip")
 	}
 
 	log.Infof("remove existing app from the install dir before the install is started")
-	systemdService := systemd.New(app.ServiceName, false, inst.DefaultTimeout)
+	serviceName := inst.GetServiceNameFromAppName(app.Name)
+	systemdService := systemd.New(serviceName, false, inst.DefaultTimeout)
 	uninstallResponse := systemdService.Uninstall()
 
-	err := inst.DirsInstallApp(app.Name, app.Version)
+	err := inst.CreateInstallAppDirs(app.Name, app.Version)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("install edge app make dirs: %s", err.Error()))
 	}
 	log.Infof("made all dirs succefully for app: %s, version: %s", app.Name, app.Version)
-	destination := inst.GetAppInstallPathAndVersion(app.Name, app.Version)
+	destination := inst.GetAppInstallPathWithVersionPath(app.Name, app.Version)
 	log.Infof("app zip source: %s", app.Source)
 	log.Infof("app zip destination: %s", destination)
 	// unzip the build to the app dir  /data/rubix-service/install/apps/<name>/<version>
@@ -70,7 +68,7 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 				newFile := fmt.Sprintf("%s/app", destination)
 				log.Infof("Existing file: %s renaming into: %s", existingFile, newFile)
 				if knownBuildNames(file) {
-					err = inst.MoveFile(existingFile, newFile, true) // rename the build
+					err = fileutils.MoveFile(existingFile, newFile) // rename the build
 					if err != nil {
 						return nil, errors.New(fmt.Sprintf("install edge app rename file err: %s", err.Error()))
 					}
@@ -80,7 +78,7 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 		}
 	}
 
-	installed, err := inst.ConfirmAppInstalled(app.Name, app.ServiceName)
+	installed, err := inst.ConfirmAppInstalled(app.Name)
 	if err != nil {
 		return nil, err
 	}

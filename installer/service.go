@@ -8,9 +8,6 @@ import (
 )
 
 func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) {
-	if app.ServiceName == "" {
-		return nil, errors.New("service_name can not be empty, for example: nubeio-flow-framework.service")
-	}
 	if app.Source == "" {
 		return nil, errors.New("service source file path can not be empty, for example: /data/tmp/tmp_b8cb4d888176/nubeio-flow-framework.service")
 	}
@@ -18,15 +15,16 @@ func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) 
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no service file found in path: %s", app.Source))
 	}
-	found = inst.ConfirmAppDataDir(app.Name)
+	found = fileutils.DirExists(inst.GetAppDataPath(app.Name))
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no app dir found for provided app: %s", app.Name))
 	}
-	found = inst.ConfirmAppInstallDir(app.Name)
+	found = fileutils.DirExists(inst.GetAppInstallPath(app.Name))
 	if !found {
 		return nil, errors.New(fmt.Sprintf("no app install dir found for provided app: %s", app.Name))
 	}
-	return inst.installService(app.ServiceName, app.Source)
+	serviceName := inst.GetServiceNameFromAppName(app.Name)
+	return inst.installService(serviceName, app.Source)
 }
 
 // InstallService a new linux service

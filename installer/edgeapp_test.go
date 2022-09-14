@@ -6,9 +6,8 @@ import (
 	"testing"
 )
 
-var appName = "flow-framework"
-
 func Test_GetAppVersion(t *testing.T) {
+	var appName = "flow-framework"
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FileMode: fileMode})

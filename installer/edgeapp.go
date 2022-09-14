@@ -74,7 +74,7 @@ func (inst *App) ListAppsStatus(appServiceMapping map[string]string) ([]AppsStat
 	return installedServices, nil
 }
 
-func (inst *App) ConfirmAppInstalled(appName string, serviceFileName string) (*AppResponse, error) {
+func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 	if appName == "" {
 		return nil, errors.New("app name can not be empty")
 	}
@@ -83,7 +83,8 @@ func (inst *App) ConfirmAppInstalled(appName string, serviceFileName string) (*A
 		return nil, errors.New("failed to find app version")
 	}
 	ctl := systemctl.New(false, defaultTimeout)
-	state, err := ctl.State(serviceFileName)
+	serviceName := inst.GetServiceNameFromAppName(appName)
+	state, err := ctl.State(serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +96,7 @@ func (inst *App) ConfirmAppInstalled(appName string, serviceFileName string) (*A
 }
 
 func (inst *App) GetAppVersion(appName string) string {
-	file := fmt.Sprintf("%s/%s", inst.AppsInstallDir, appName)
+	file := inst.GetAppInstallPath(appName)
 	fileInfo, err := os.Stat(file)
 	if err != nil {
 		return ""

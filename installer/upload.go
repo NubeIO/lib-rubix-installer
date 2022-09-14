@@ -8,12 +8,12 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"path"
 	"path/filepath"
 )
 
 type Upload struct {
 	Name              string                `json:"name"`
-	ServiceName       string                `json:"service_name"`
 	Version           string                `json:"version"`
 	Product           string                `json:"product"`
 	Arch              string                `json:"arch"`
@@ -60,9 +60,6 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if app.Product == "" {
 		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
-	if app.ServiceName == "" {
-		return nil, errors.New("app service_name can not be empty")
-	}
 	if !app.DoNotValidateArch { // wires don't care about the arch
 		err := inst.CompareBuildToArch(app.File.Filename, app.Product)
 		if err != nil {
@@ -73,15 +70,15 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app unzip err: %s", err.Error()))
 	}
-	err = inst.SystemCtl.Stop(app.ServiceName) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
+	serviceName := inst.GetServiceNameFromAppName(app.Name)
+	err = inst.SystemCtl.Stop(serviceName) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
 	if err != nil {
-		log.Infof("was able to stop service: %s", app.ServiceName)
+		log.Infof("was able to stop service: %s", serviceName)
 	}
 	response, err := inst.InstallEdgeApp(&Install{
-		Name:        app.Name,
-		Version:     app.Version,
-		ServiceName: app.ServiceName,
-		Source:      resp.UploadedFile,
+		Name:    app.Name,
+		Version: app.Version,
+		Source:  resp.UploadedFile,
 	})
 	return response, err
 }
@@ -146,19 +143,19 @@ func (inst *App) unzip(source, destination string) ([]string, error) {
 // SaveUploadedFile uploads the form file to specific dst.
 // combination's of file name and the destination and will save file as: /data/my-file
 // returns the filename and path as a string and any error
-func (inst *App) SaveUploadedFile(file *multipart.FileHeader, dest string) (destination string, err error) {
-	destination = fmt.Sprintf("%s/%s", dest, file.Filename)
-	fmt.Println("SaveUploadedFile dest", destination)
+func (inst *App) SaveUploadedFile(file *multipart.FileHeader, destination string) (uploadedFile string, err error) {
+	uploadedFile = path.Join(destination, file.Filename)
+	fmt.Println("SaveUploadedFile destination", uploadedFile)
 	src, err := file.Open()
 	if err != nil {
-		return destination, err
+		return uploadedFile, err
 	}
 	defer src.Close()
-	out, err := os.Create(destination)
+	out, err := os.Create(uploadedFile)
 	if err != nil {
-		return destination, err
+		return uploadedFile, err
 	}
 	defer out.Close()
 	_, err = io.Copy(out, src)
-	return destination, err
+	return uploadedFile, err
 }

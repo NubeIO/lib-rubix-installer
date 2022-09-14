@@ -31,7 +31,7 @@ func (inst *App) listFiles(file string) ([]string, error) {
 }
 
 func timestamp() string {
-	t := time.Now().Format("2006-01-02 15:04:05")
+	t := time.Now().Format("2006-01-02T15:04:05")
 	return t
 }
 
@@ -63,42 +63,49 @@ func checkZipContents(file *zip.File) (string, error) {
 	return file.Name, nil
 }
 
-func unzip(src, dest string) error {
+func unzip(src, destination string) error {
 	r, err := zip.OpenReader(src)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
-	// TODO: loop defer
 	for _, f := range r.File {
-		rc, err := f.Open()
+		err = extractZipFile(f, destination)
 		if err != nil {
 			return err
 		}
-		defer rc.Close()
-		fpath := filepath.Join(dest, f.Name)
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(fpath, f.Mode())
-		} else {
-			var fdir string
-			if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
-				fdir = fpath[:lastIndex]
-			}
-			err = os.MkdirAll(fdir, f.Mode())
-			if err != nil {
-				log.Fatal(err)
-				return err
-			}
-			f, err := os.OpenFile(
-				fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			_, err = io.Copy(f, rc)
-			if err != nil {
-				return err
-			}
+	}
+	return nil
+}
+
+func extractZipFile(f *zip.File, destination string) error {
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+	fpath := filepath.Join(destination, f.Name)
+	if f.FileInfo().IsDir() {
+		os.MkdirAll(fpath, f.Mode())
+	} else {
+		var fdir string
+		if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
+			fdir = fpath[:lastIndex]
+		}
+		err = os.MkdirAll(fdir, f.Mode())
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		f, err := os.OpenFile(
+			fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		_, err = io.Copy(f, rc)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
