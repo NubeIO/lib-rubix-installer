@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"github.com/NubeIO/lib-uuid/uuid"
 	"path"
 )
 
@@ -10,8 +11,14 @@ func (inst *App) GetAppDataPath(appName string) string {
 	return path.Join(inst.DataDir, dataDirName)
 }
 
-// GetAppConfigPath get the full app path =>  /data/rubix-wires/config
-func (inst *App) GetAppConfigPath(appName string) string {
+// GetAppDataDataPath get the full app install path => /data/rubix-wires/data
+func (inst *App) GetAppDataDataPath(appName string) string {
+	dataDirName := inst.GetDataDirNameFromAppName(appName)
+	return path.Join(inst.DataDir, dataDirName, "data")
+}
+
+// GetAppDataConfigPath get the full app path =>  /data/rubix-wires/config
+func (inst *App) GetAppDataConfigPath(appName string) string {
 	dataDirName := inst.GetDataDirNameFromAppName(appName)
 	return path.Join(inst.DataDir, dataDirName, "config")
 }
@@ -36,4 +43,12 @@ func (inst *App) GetStoreDir() string {
 // GetStoreAppPathAndVersion get the full app install path and version => /data/store/apps/rubix-wires/v0.0.1
 func (inst *App) GetStoreAppPathAndVersion(appName, version string) string {
 	return path.Join(inst.StoreDir, appName, version)
+}
+
+func (inst *App) CreateTmpPath() string {
+	return path.Join(inst.TmpDir, uuid.ShortUUID("tmp"))
+}
+
+func (inst *App) GetRubixServiceDataDataPath() string {
+	return path.Join(inst.RubixServiceDir, "data")
 }

@@ -4,18 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
-	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
 	"os"
 )
 
 // CreateInstallAppDirs make all the installation dirs
-func (inst *App) CreateInstallAppDirs(appName, version string) error {
+func (inst *App) CreateInstallAppDirs(appName, appVersion string) error {
 	if appName == "" {
-		return errors.New("app name can not be empty")
+		return errors.New("app_name can not be empty")
 	}
-	if version == "" {
-		return errors.New("app version can not be empty")
+	if appVersion == "" {
+		return errors.New("app_version can not be empty")
 	}
 	err := inst.MakeAllDirs()
 	log.Info("install app edge: MakeAllDirs")
@@ -27,7 +26,7 @@ func (inst *App) CreateInstallAppDirs(appName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeDirectoryIfNotExists(fmt.Sprintf("%s/config", inst.GetAppDataPath(appName)), os.FileMode(inst.FileMode)) // make the app config dir
+	err = inst.MakeDirectoryIfNotExists(inst.GetAppDataConfigPath(appName), os.FileMode(inst.FileMode)) // make the app config dir
 	log.Infof("install app edge: MakeDirectoryIfNotExists app: %s", appName)
 	if err != nil {
 		return err
@@ -37,8 +36,8 @@ func (inst *App) CreateInstallAppDirs(appName, version string) error {
 	if err != nil {
 		return err
 	}
-	err = inst.MakeAppVersionDir(appName, version)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name: %s version: %s", appName, version)
+	err = inst.MakeAppVersionDir(appName, appVersion)
+	log.Infof("install app edge: MakeAppInstallDir app-build-name: %s appVersion: %s", appName, appVersion)
 	if err != nil {
 		return err
 	}
@@ -80,18 +79,18 @@ func (inst *App) MakeTmpDirUpload() (string, error) {
 	if err := checkDir(inst.DataDir); err != nil {
 		return "", errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
 	}
-	tmpDir := fmt.Sprintf("%s/%s", inst.TmpDir, uuid.ShortUUID("tmp"))
+	tmpDir := inst.CreateTmpPath()
 	err := makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FileMode))
 	return tmpDir, err
 }
 
-// MakeInstallDir  => /data/rubix-service/install
+// MakeInstallDir  => /data/rubix-service/apps/install
 func (inst *App) MakeInstallDir() error {
 	if inst.AppsInstallDir == "" {
 		return errors.New("MakeDataDir path can not be empty")
 	}
-	rsDir := fmt.Sprintf("%s/data", inst.RubixServiceDir)
-	err := mkdirAll(rsDir, os.FileMode(inst.FileMode))
+	rsDataDataDir := inst.GetRubixServiceDataDataPath()
+	err := mkdirAll(rsDataDataDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		log.Errorf("error on making rubix-service data dir %s", err.Error())
 		return err
@@ -99,7 +98,6 @@ func (inst *App) MakeInstallDir() error {
 	err = mkdirAll(inst.AppsInstallDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		log.Errorf("error on making rubix-service app install dir %s", err.Error())
-		return err
 	}
 	return err
 }
