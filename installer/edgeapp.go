@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"path"
 )
 
 type AppResponse struct {
@@ -33,42 +34,40 @@ type AppsStatus struct {
 
 // ListApps apps by listed in the installation (/data/rubix-service/apps/install)
 func (inst *App) ListApps() ([]Apps, error) {
-	rootDir := inst.AppsInstallDir
 	var apps []Apps
 	var app Apps
-	files, err := ioutil.ReadDir(rootDir)
+	files, err := ioutil.ReadDir(inst.AppsInstallDir)
 	if err != nil {
 		return nil, err
 	}
 	for _, file := range files {
-		app.Name = file.Name()
+		app.Name = inst.GetAppNameFromRepoName(file.Name())
 		app.Version = inst.GetAppVersion(app.Name)
-		app.Path = fmt.Sprintf("%s/apps/%s", rootDir, file.Name())
+		app.Path = path.Join(inst.AppsInstallDir, file.Name())
 		apps = append(apps, app)
 	}
 	return apps, err
 }
 
 // ListAppsStatus get all the apps by listed in the installation (/data/rubix-service/apps/install) dir and then check the service
-func (inst *App) ListAppsStatus(appServiceMapping map[string]string) ([]AppsStatus, error) {
+func (inst *App) ListAppsStatus() ([]AppsStatus, error) {
 	apps, err := inst.ListApps()
 	if err != nil {
 		return nil, err
 	}
 	var installedServices []AppsStatus
+	fmt.Println("apps", apps)
 	for _, app := range apps {
 		var installedService AppsStatus
 		installedService.AppName = app.Name
 		installedService.Version = app.Version
-		serviceName, exist := appServiceMapping[app.Name]
-		if exist {
-			installedService.ServiceName = serviceName
-			installed, err := inst.SystemCtl.State(serviceName)
-			if err != nil {
-				log.Errorf("service is not intalled: %s", serviceName)
-			}
-			installedService.AppState = &installed
+		serviceName := inst.GetServiceNameFromAppName(app.Name)
+		installedService.ServiceName = serviceName
+		installed, err := inst.SystemCtl.State(serviceName)
+		if err != nil {
+			log.Errorf("service is not intalled: %s", serviceName)
 		}
+		installedService.AppState = &installed
 		installedServices = append(installedServices, installedService)
 	}
 	return installedServices, nil

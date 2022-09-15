@@ -31,9 +31,7 @@ func Test_ListAppsStatus(t *testing.T) {
 	var err error
 	fmt.Println(err)
 	app := New(&App{DataDir: "/data", FileMode: fileMode})
-	appServiceMapping := map[string]string{}
-	appServiceMapping["flow-framework"] = "nubeio-flow-framework.service"
-	installed, err := app.ListAppsStatus(appServiceMapping)
+	installed, err := app.ListAppsStatus()
 	fmt.Println(installed, err)
 	if err != nil {
 		return
