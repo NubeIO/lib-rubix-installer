@@ -34,8 +34,8 @@ func (inst *App) CompareBuildToArch(buildZipName, productType string) error {
 		log.Errorf("upload build get product type err: %s", err.Error())
 		return err
 	}
-	if zipBuildInfo.MatchedArch != productInfo.Arch {
-		errMsg := fmt.Sprintf("upload build incorrect arch type, was uploaded build arch: %s & host arch: %s", zipBuildInfo.MatchedArch, productInfo.Arch)
+	if zipBuildInfo.Arch != productInfo.Arch {
+		errMsg := fmt.Sprintf("upload build incorrect arch type, was uploaded build arch: %s & host arch: %s", zipBuildInfo.Arch, productInfo.Arch)
 		log.Errorf(errMsg)
 		return errors.New(errMsg)
 	}
