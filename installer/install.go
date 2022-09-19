@@ -7,6 +7,7 @@ import (
 	"github.com/NubeIO/lib-systemctl-go/systemd"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -28,16 +29,16 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 		return nil, errors.New("app install body can not be empty")
 	}
 	if app.Name == "" {
-		return nil, errors.New("app name can not be empty")
+		return nil, errors.New(ErrEmptyAppName)
 	}
 	if app.Version == "" {
-		return nil, errors.New("app version can not be empty")
+		return nil, errors.New(ErrEmptyAppVersion)
 	}
 	if app.Source == "" {
-		return nil, errors.New("app build source can not be empty, try: /data/tmp/tmp_1223/flow-framework.zip")
+		return nil, errors.New("app build source can not be empty, try: /data/tmp/tmp_1234/flow-framework.zip")
 	}
 
-	log.Infof("remove existing app from the install dir before the install is started")
+	log.Infof("remove existing app from the install dir before the install is started...")
 	serviceName := inst.GetServiceNameFromAppName(app.Name)
 	systemdService := systemd.New(serviceName, false, inst.DefaultTimeout)
 	uninstallResponse := systemdService.Uninstall()
@@ -53,7 +54,7 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 	// unzip the build to the app dir  /data/rubix-service/install/apps/<name>/<version>
 	_, err = inst.unzip(app.Source, destination) // unzip the build
 	if err != nil {
-		log.Errorf("install edge app unzip source: %s dest: %s err: %s", app.Source, destination, err.Error())
+		log.Errorf("install edge app unzip source: %s, dest: %s, err: %s", app.Source, destination, err.Error())
 		return nil, errors.New(fmt.Sprintf("install edge app unzip err: %s", err.Error()))
 	}
 	// rename the extracted file into app, it's only for those apps which is not frontend and executable
@@ -64,8 +65,8 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 		}
 		if len(files) > 0 {
 			for _, file := range files {
-				existingFile := fmt.Sprintf("%s/%s", destination, file)
-				newFile := fmt.Sprintf("%s/app", destination)
+				existingFile := path.Join(destination, file)
+				newFile := path.Join(destination, "app")
 				log.Infof("Existing file: %s renaming into: %s", existingFile, newFile)
 				if knownBuildNames(file) {
 					err = fileutils.MoveFile(existingFile, newFile) // rename the build

@@ -35,9 +35,9 @@ func (inst *App) GetAppInstallPathWithVersionPath(appName, version string) strin
 	return path.Join(inst.AppsInstallDir, repoName, version)
 }
 
-// GetStoreDir get store dir
-func (inst *App) GetStoreDir() string {
-	return inst.StoreDir
+// GetStoreAppsDir get store dir
+func (inst *App) GetStoreAppsDir() string {
+	return path.Join(inst.StoreDir, "apps")
 }
 
 // GetStoreAppPathAndVersion get the full app install path and version => /data/store/apps/rubix-wires/v0.0.1

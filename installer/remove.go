@@ -18,7 +18,8 @@ type UninstallResponse struct {
 }
 
 // UninstallApp full removal of an app, including removing the linux service
-func (inst *App) UninstallApp(appName string, serviceName string, deleteAppDataDir bool) (*UninstallResponse, error) {
+func (inst *App) UninstallApp(appName string, deleteAppDataDir bool) (*UninstallResponse, error) {
+	serviceName := inst.GetServiceNameFromAppName(appName)
 	systemdService := systemd.New(serviceName, false, inst.DefaultTimeout)
 	remove := systemdService.Uninstall()
 	resp := &UninstallResponse{

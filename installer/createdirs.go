@@ -2,19 +2,20 @@ package installer
 
 import (
 	"errors"
-	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
+	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"path"
 )
 
 // CreateInstallAppDirs make all the installation dirs
 func (inst *App) CreateInstallAppDirs(appName, appVersion string) error {
 	if appName == "" {
-		return errors.New("app_name can not be empty")
+		return errors.New(ErrEmptyAppName)
 	}
 	if appVersion == "" {
-		return errors.New("app_version can not be empty")
+		return errors.New(ErrEmptyAppVersion)
 	}
 	err := inst.MakeAllDirs()
 	log.Info("install app edge: MakeAllDirs")
@@ -22,22 +23,22 @@ func (inst *App) CreateInstallAppDirs(appName, appVersion string) error {
 		return err
 	}
 	err = inst.MakeAppDataDir(appName)
-	log.Infof("install app edge: MakeAppDataDir app: %s", appName)
+	log.Infof("install app edge: MakeAppDataDir app_name: %s", appName)
 	if err != nil {
 		return err
 	}
-	err = inst.MakeDirectoryIfNotExists(inst.GetAppDataConfigPath(appName), os.FileMode(inst.FileMode)) // make the app config dir
-	log.Infof("install app edge: MakeDirectoryIfNotExists app: %s", appName)
+	err = os.MkdirAll(inst.GetAppDataConfigPath(appName), os.FileMode(inst.FileMode)) // make the app config dir
+	log.Infof("install app edge: MakeDirectoryIfNotExists app_name: %s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppInstallDir(appName)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name: %s", appName)
+	log.Infof("install app edge: MakeAppInstallDir app_name: %s", appName)
 	if err != nil {
 		return err
 	}
 	err = inst.MakeAppVersionDir(appName, appVersion)
-	log.Infof("install app edge: MakeAppInstallDir app-build-name: %s appVersion: %s", appName, appVersion)
+	log.Infof("install app edge: MakeAppInstallDir app_name: %s app_version: %s", appName, appVersion)
 	if err != nil {
 		return err
 	}
@@ -63,24 +64,18 @@ func (inst *App) MakeAllDirs() error {
 
 // MakeDataDir  => /data
 func (inst *App) MakeDataDir() error {
-	return makeDirectoryIfNotExists(inst.DataDir, os.FileMode(inst.FileMode))
+	return os.MkdirAll(inst.DataDir, os.FileMode(inst.FileMode))
 }
 
 // MakeTmpDir  => /data/tmp
 func (inst *App) MakeTmpDir() error {
-	if err := checkDir(inst.DataDir); err != nil {
-		return errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
-	}
-	return makeDirectoryIfNotExists(inst.TmpDir, os.FileMode(inst.FileMode))
+	return os.MkdirAll(inst.TmpDir, os.FileMode(inst.FileMode))
 }
 
 // MakeTmpDirUpload  => /data/tmp/tmp_45EA34EB
 func (inst *App) MakeTmpDirUpload() (string, error) {
-	if err := checkDir(inst.DataDir); err != nil {
-		return "", errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
-	}
 	tmpDir := inst.CreateTmpPath()
-	err := makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FileMode))
+	err := os.MkdirAll(tmpDir, os.FileMode(inst.FileMode))
 	return tmpDir, err
 }
 
@@ -90,12 +85,12 @@ func (inst *App) MakeInstallDir() error {
 		return errors.New("MakeDataDir path can not be empty")
 	}
 	rsDataDataDir := inst.GetRubixServiceDataDataPath()
-	err := mkdirAll(rsDataDataDir, os.FileMode(inst.FileMode))
+	err := os.MkdirAll(rsDataDataDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		log.Errorf("error on making rubix-service data dir %s", err.Error())
 		return err
 	}
-	err = mkdirAll(inst.AppsInstallDir, os.FileMode(inst.FileMode))
+	err = os.MkdirAll(inst.AppsInstallDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		log.Errorf("error on making rubix-service app install dir %s", err.Error())
 	}
@@ -104,10 +99,9 @@ func (inst *App) MakeInstallDir() error {
 
 // MakeAppInstallDir  => /data/rubix-service/apps/install/wires-builds
 func (inst *App) MakeAppInstallDir(appName string, removeExisting ...bool) error {
-	if err := emptyPath(appName); err != nil {
-		return err
+	if appName != "" {
+		return errors.New(ErrEmptyAppName)
 	}
-
 	appInstallDir := inst.GetAppInstallPath(appName)
 	if len(removeExisting) > 0 {
 		if removeExisting[0] {
@@ -117,34 +111,34 @@ func (inst *App) MakeAppInstallDir(appName string, removeExisting ...bool) error
 			}
 		}
 	}
-	return makeDirectoryIfNotExists(appInstallDir, os.FileMode(inst.FileMode))
+	return os.MkdirAll(appInstallDir, os.FileMode(inst.FileMode))
 }
 
 // MakeAppVersionDir  => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) MakeAppVersionDir(appName, version string) error {
-	if err := emptyPath(appName); err != nil {
-		return err
+	if appName != "" {
+		return errors.New(ErrEmptyAppName)
 	}
-	if err := checkVersion(version); err != nil {
+	if err := CheckVersion(version); err != nil {
 		return err
 	}
 	appDir := inst.GetAppInstallPathWithVersionPath(appName, version)
-	return makeDirectoryIfNotExists(appDir, os.FileMode(inst.FileMode))
+	return os.MkdirAll(appDir, os.FileMode(inst.FileMode))
 }
 
 // MakeAppDataDir  => /data/flow-framework
 func (inst *App) MakeAppDataDir(appName string) error {
-	if err := emptyPath(appName); err != nil {
-		return err
-	}
-	if err := checkDir(inst.DataDir); err != nil {
-		return errors.New(fmt.Sprintf("dir not exists %s", inst.DataDir))
+	if appName != "" {
+		return errors.New(ErrEmptyAppName)
 	}
 	dataPath := inst.GetAppDataPath(appName)
-	return makeDirectoryIfNotExists(dataPath, os.FileMode(inst.FileMode))
+	return os.MkdirAll(dataPath, os.FileMode(inst.FileMode))
 }
 
-// MakeDirectoryIfNotExists make dir
-func (inst *App) MakeDirectoryIfNotExists(path string, perm os.FileMode) error {
-	return makeDirectoryIfNotExists(path, perm)
+// MakeBackupTmpDirUpload  => ~/backup/tmp/tmp_AB34DA34
+func (inst *App) MakeBackupTmpDirUpload() (string, error) {
+	backupDir := inst.getBackupDir()
+	tmpDir := path.Join(backupDir, "tmp", uuid.ShortUUID("tmp"))
+	err := os.MkdirAll(tmpDir, os.FileMode(inst.FileMode))
+	return tmpDir, err
 }

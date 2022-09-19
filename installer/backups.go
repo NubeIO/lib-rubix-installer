@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
-	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
 	"mime/multipart"
 	"os"
@@ -49,7 +48,7 @@ func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp.Message = fmt.Sprintf("restored backup ok from: %s", restore.UploadedFile)
+	resp.Message = fmt.Sprintf("restored backup sucessfully from: %s", restore.UploadedFile)
 	return resp, nil
 }
 
@@ -68,7 +67,7 @@ func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error)
 	if err != nil {
 		return nil, err
 	}
-	resp.Message = fmt.Sprintf("retored backup ok from: %s", restore.UploadedFile)
+	resp.Message = fmt.Sprintf("retored backup sucessfully from: %s", restore.UploadedFile)
 	return resp, nil
 }
 
@@ -142,7 +141,7 @@ func (inst *App) ListAppsBackups() ([]string, error) {
 // ListAppBackups list all the backups taken for each app
 func (inst *App) ListAppBackups(appName string) ([]string, error) {
 	if appName == "" {
-		return nil, errors.New("app_name can not be empty")
+		return nil, errors.New(ErrEmptyAppName)
 	}
 	appBackupDir := inst.getAppBackupDir(appName)
 	return inst.listFiles(appBackupDir)
@@ -228,7 +227,7 @@ func (inst *App) FullBackUp(deviceName *string) (string, error) {
 		return "", errors.New(fmt.Sprintf("failed to find %s", inst.DataDir))
 	}
 	fullBackupDir := inst.getFullBackupDir()
-	err := inst.MakeDirectoryIfNotExists(fullBackupDir, os.FileMode(inst.FileMode))
+	err := os.MkdirAll(fullBackupDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		return "", err
 	}
@@ -239,7 +238,7 @@ func (inst *App) FullBackUp(deviceName *string) (string, error) {
 // BackupApp backup an app ~/apps/appName/appName-version-2022-07-31T12:02:01
 func (inst *App) BackupApp(appName string, deviceName *string) (string, error) {
 	if appName == "" {
-		return "", errors.New("app name can not be empty")
+		return "", errors.New(ErrEmptyAppName)
 	}
 	found := fileutils.DirExists(inst.GetAppDataPath(appName))
 	if !found {
@@ -251,20 +250,12 @@ func (inst *App) BackupApp(appName string, deviceName *string) (string, error) {
 	}
 	source := inst.GetAppDataPath(appName)
 	appBackupDir := inst.getAppBackupDir(appName)
-	err := inst.MakeDirectoryIfNotExists(appBackupDir, os.FileMode(inst.FileMode))
+	err := os.MkdirAll(appBackupDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		return "", err
 	}
 	zipFile := inst.generateAppBackupZipFile(appName, version, deviceName)
 	return zipFile, fileutils.RecursiveZip(source, zipFile)
-}
-
-// MakeBackupTmpDirUpload  => ~/backup/tmp/tmp_AB34DA34
-func (inst *App) MakeBackupTmpDirUpload() (string, error) {
-	home := inst.getBackupDir()
-	tmpDir := fmt.Sprintf("%s/tmp/%s", home, uuid.ShortUUID("tmp"))
-	err := makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FileMode))
-	return tmpDir, err
 }
 
 // getBackupDir backup home dir ~/backup

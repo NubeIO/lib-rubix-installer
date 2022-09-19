@@ -56,8 +56,7 @@ func readZip(src string) ([]string, error) {
 func checkZipContents(file *zip.File) (string, error) {
 	fileRead, err := file.Open()
 	if err != nil {
-		msg := "failed to open zip %s for reading: %s"
-		return "", fmt.Errorf(msg, file.Name, err)
+		return "", fmt.Errorf("failed to open zip %s for reading: %s", file.Name, err)
 	}
 	defer fileRead.Close()
 	return file.Name, nil

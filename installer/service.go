@@ -9,7 +9,7 @@ import (
 
 func (inst *App) InstallService(app *Install) (*systemd.InstallResponse, error) {
 	if app.Source == "" {
-		return nil, errors.New("service source file path can not be empty, for example: /data/tmp/tmp_b8cb4d888176/nubeio-flow-framework.service")
+		return nil, errors.New("service source file path can not be empty, for example: /data/tmp/tmp_1234/nubeio-flow-framework.service")
 	}
 	found := fileutils.FileExists(app.Source)
 	if !found {

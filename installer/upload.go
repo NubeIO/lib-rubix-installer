@@ -49,10 +49,10 @@ func (inst *App) CompareBuildToArch(buildZipName, productType string) error {
 
 func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 	if app.Name == "" {
-		return nil, errors.New("app name can not be empty")
+		return nil, errors.New(ErrEmptyAppName)
 	}
 	if app.Version == "" {
-		return nil, errors.New("app version can not be empty")
+		return nil, errors.New(ErrEmptyAppVersion)
 	}
 	if app.Arch == "" {
 		return nil, errors.New("arch type can not be empty, try armv7 amd64")

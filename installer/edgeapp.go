@@ -2,7 +2,6 @@ package installer
 
 import (
 	"errors"
-	"fmt"
 	"github.com/NubeIO/lib-systemctl-go/systemctl"
 	"github.com/NubeIO/lib-systemctl-go/systemd"
 	log "github.com/sirupsen/logrus"
@@ -56,7 +55,6 @@ func (inst *App) ListAppsStatus() ([]AppsStatus, error) {
 		return nil, err
 	}
 	var installedServices []AppsStatus
-	fmt.Println("apps", apps)
 	for _, app := range apps {
 		var installedService AppsStatus
 		installedService.AppName = app.Name
@@ -75,7 +73,7 @@ func (inst *App) ListAppsStatus() ([]AppsStatus, error) {
 
 func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 	if appName == "" {
-		return nil, errors.New("app name can not be empty")
+		return nil, errors.New(ErrEmptyAppName)
 	}
 	version := inst.GetAppVersion(appName)
 	if version == "" {
@@ -106,7 +104,7 @@ func (inst *App) GetAppVersion(appName string) string {
 			return ""
 		}
 		for _, file := range files {
-			if checkVersionBool(file.Name()) {
+			if CheckVersionBool(file.Name()) {
 				return file.Name()
 			}
 		}
