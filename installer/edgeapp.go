@@ -11,9 +11,9 @@ import (
 )
 
 type AppResponse struct {
-	Name              string                     `json:"app"`
+	Name              string                     `json:"name"`
 	Version           string                     `json:"version,omitempty"`
-	AppStatus         *systemctl.SystemState     `json:"app_status,omitempty"`
+	State             *systemctl.SystemState     `json:"state,omitempty"`
 	Error             string                     `json:"error,omitempty"`
 	UninstallResponse *systemd.UninstallResponse `json:"remove_response"`
 }
@@ -25,10 +25,10 @@ type Apps struct {
 }
 
 type AppsStatus struct {
-	AppName     string                 `json:"app_name,omitempty"`
+	Name        string                 `json:"name,omitempty"`
 	Version     string                 `json:"version,omitempty"`
 	ServiceName string                 `json:"service_name,omitempty"`
-	AppState    *systemctl.SystemState `json:"app_state,omitempty"`
+	State       *systemctl.SystemState `json:"state,omitempty"`
 }
 
 // ListApps apps by listed in the installation (/data/rubix-service/apps/install)
@@ -57,7 +57,7 @@ func (inst *App) ListAppsStatus() ([]AppsStatus, error) {
 	var installedServices []AppsStatus
 	for _, app := range apps {
 		var installedService AppsStatus
-		installedService.AppName = app.Name
+		installedService.Name = app.Name
 		installedService.Version = app.Version
 		serviceName := inst.GetServiceNameFromAppName(app.Name)
 		installedService.ServiceName = serviceName
@@ -65,7 +65,7 @@ func (inst *App) ListAppsStatus() ([]AppsStatus, error) {
 		if err != nil {
 			log.Errorf("service is not intalled: %s", serviceName)
 		}
-		installedService.AppState = &installed
+		installedService.State = &installed
 		installedServices = append(installedServices, installedService)
 	}
 	return installedServices, nil
@@ -86,9 +86,9 @@ func (inst *App) ConfirmAppInstalled(appName string) (*AppResponse, error) {
 		return nil, err
 	}
 	return &AppResponse{
-		Name:      appName,
-		Version:   version,
-		AppStatus: &state,
+		Name:    appName,
+		Version: version,
+		State:   &state,
 	}, err
 }
 
