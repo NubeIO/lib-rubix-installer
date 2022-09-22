@@ -2,13 +2,12 @@ package installer
 
 import (
 	"fmt"
-	"github.com/NubeIO/lib-rubix-installer/pprint"
 	"testing"
 )
 
-/*
-This is for taking backups on an edge device
-*/
+// This is for taking backups on an edge device
+
+var testAppName = "flow-framework"
 
 func Test_readZip(t *testing.T) {
 	readZip("/home/aidan/backup/full/testDevice1234-full-backup-2022-08-05 06:30:05.zip")
@@ -17,8 +16,9 @@ func Test_readZip(t *testing.T) {
 func Test_BackupApp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
-	back, err := app.BackupApp(appName, "testDevice1234")
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
+	deviceName := "testDevice1234"
+	back, err := app.BackupApp(testAppName, &deviceName)
 	fmt.Println(err)
 	if err != nil {
 		return
@@ -29,8 +29,9 @@ func Test_BackupApp(t *testing.T) {
 func Test_FullBackUp(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
-	back, err := app.FullBackUp("testDevice1234")
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
+	deviceName := "testDevice1234"
+	back, err := app.FullBackUp(&deviceName)
 	fmt.Println(err)
 	if err != nil {
 		return
@@ -38,65 +39,50 @@ func Test_FullBackUp(t *testing.T) {
 	fmt.Println(back)
 }
 
-func TestApp_ListFullBackups(t *testing.T) {
+func Test_ListFullBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.ListFullBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
 }
 
-func TestApp_ListAppBackups(t *testing.T) {
+func Test_ListAppsBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
-	backs, err := app.ListAppBackupsDirs()
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
+	backs, err := app.ListAppsBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
 }
 
-func TestApp_ListBackupsByApp(t *testing.T) {
+func Test_ListAppBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
-	backs, err := app.ListBackupsByApp(appName)
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
+	backs, err := app.ListAppBackups(testAppName)
 	fmt.Println(err)
 	fmt.Println(backs)
 }
 
-func TestApp_DeleteAllBackups(t *testing.T) {
+func Test_DeleteAllBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
 	backs, err := app.WipeBackups()
 	fmt.Println(err)
 	fmt.Println(backs)
 }
 
-func TestApp_DeleteAppAllBackUpByName(t *testing.T) {
+func Test_DeleteAllAppBackups(t *testing.T) {
 	var err error
 	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
-	backs, err := app.DeleteAppAllBackUpByName(appName)
+	app := New(&App{DataDir: "/data", FileMode: fileMode, BackupsDir: "/home/aidan/backup"})
+	backs, err := app.DeleteAllAppBackups(testAppName)
 	fmt.Println(err)
 	if err != nil {
 		return
 	}
 	fmt.Println(backs)
-}
-
-func TestApp_DeleteAppBackUp(t *testing.T) {
-	var err error
-	fmt.Println(err)
-	app := New(&App{DataDir: "/data", FilePerm: filePerm, BackupsDir: "/home/aidan/backup"})
-	byApp, err := app.ListBackupsByApp(appName)
-	fmt.Println(err)
-	if err != nil {
-		return
-	}
-	if byApp == nil {
-
-	}
-	pprint.PrintJSON(byApp)
 }

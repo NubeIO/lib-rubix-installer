@@ -27,9 +27,7 @@ func (inst *App) GetProduct(fileAndPath ...string) (*Product, error) {
 	return product, err
 }
 
-const (
-	FilePath = "/data/product.json"
-)
+const FilePath = "/data/product.json"
 
 func read(fileAndPath ...string) (*Product, error) {
 	path := FilePath

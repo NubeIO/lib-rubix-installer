@@ -1,12 +1,8 @@
 package installer
 
-import (
-	"errors"
-	"fmt"
-	"os"
-)
+import "os"
 
-// MakeStoreAll  => /data/store
+// MakeStoreAll  => /data, /data/store, /data/store/apps
 func (inst *App) MakeStoreAll() error {
 	if err := inst.MakeDataDir(); err != nil {
 		return err
@@ -22,16 +18,10 @@ func (inst *App) MakeStoreAll() error {
 
 // MakeStoreDir  => /data/store
 func (inst *App) MakeStoreDir() error {
-	if err := checkDir(inst.DataDir); err != nil {
-		return errors.New(fmt.Sprintf("store dir not exists %s", inst.DataDir))
-	}
-	return makeDirectoryIfNotExists(inst.StoreDir, os.FileMode(inst.FilePerm))
+	return os.MkdirAll(inst.StoreDir, os.FileMode(inst.FileMode))
 }
 
 // MakeStoreApps  => /data/store/apps
 func (inst *App) MakeStoreApps() error {
-	if err := checkDir(inst.GetStoreDir()); err != nil {
-		return errors.New(fmt.Sprintf("store/apps not exists %s", inst.GetStoreDir()))
-	}
-	return makeDirectoryIfNotExists(fmt.Sprintf("%s/apps", inst.StoreDir), os.FileMode(inst.FilePerm))
+	return os.MkdirAll(inst.GetStoreAppsDir(), os.FileMode(inst.FileMode))
 }

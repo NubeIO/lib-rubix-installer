@@ -4,11 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/NubeIO/lib-files/fileutils"
-	"github.com/NubeIO/lib-uuid/uuid"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"mime/multipart"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -21,87 +20,69 @@ type RestoreResponse struct {
 	TakeBackupPath string `json:"take_backup_path,omitempty"`
 }
 
-/*
-RESTORE A BACK-UPS
-*/
-
 type RestoreBackup struct {
 	AppName      string                `json:"app_name"`
-	DeviceName   string                `json:"device_name"`
+	DeviceName   *string               `json:"device_name"`
 	TakeBackup   bool                  `json:"take_backup"`
 	RebootDevice bool                  `json:"reboot_device"`
 	File         *multipart.FileHeader `json:"file"`
 }
 
+// ------------------
+// RESTORE A BACK-UPS
+// ------------------
+
 // RestoreBackup restore a backup data dir /data
 func (inst *App) RestoreBackup(back *RestoreBackup) (*RestoreResponse, error) {
-	var file = back.File
-	var takeBackup = back.TakeBackup
-	var deiceName = back.DeviceName
 	var destination = "/"
-	var deleteDirName = inst.DataDir
 	var checkDirName = "data"
-	// delete the existing data dir
 	resp := &RestoreResponse{}
-	if takeBackup {
-		backup, err := inst.FullBackUp(deiceName)
+	if back.TakeBackup {
+		backup, err := inst.FullBackUp(back.DeviceName)
 		if err != nil {
 			return nil, err
 		}
 		resp.TakeBackupPath = backup
 	}
-	restore, err := inst.restoreBackup(file, destination, deleteDirName, checkDirName, "")
+	restore, err := inst.restoreBackup(back.File, destination, inst.DataDir, checkDirName)
 	if err != nil {
 		return nil, err
 	}
-	resp.Message = fmt.Sprintf("retored backup ok from: %s", restore.UploadedFile)
+	resp.Message = fmt.Sprintf("restored backup sucessfully from: %s", restore.UploadedFile)
 	return resp, nil
 }
 
 // RestoreAppBackup restore a backup of an app /data/flow-framework
 func (inst *App) RestoreAppBackup(back *RestoreBackup) (*RestoreResponse, error) {
-	var file = back.File
-	var takeBackup = back.TakeBackup
-	var appName = back.AppName
-	var deiceName = back.DeviceName
-	var checkDirName = appName
-	var deleteDirName = fmt.Sprintf("%s/%s", inst.DataDir, appName)
+	var deleteDirName = inst.GetAppDataPath(back.AppName)
 	resp := &RestoreResponse{}
-	if takeBackup {
-		backup, err := inst.BackupApp(appName, deiceName)
+	if back.TakeBackup {
+		backup, err := inst.BackupApp(back.AppName, back.DeviceName)
 		if err != nil {
 			return nil, err
 		}
 		resp.TakeBackupPath = backup
 	}
-	version := inst.GetAppVersion(appName)
-	if version == "" {
-		return nil, errors.New("app version was not found")
-	}
-	restore, err := inst.restoreBackup(file, inst.DataDir, deleteDirName, checkDirName, version)
+	restore, err := inst.restoreBackup(back.File, inst.DataDir, deleteDirName, back.AppName)
 	if err != nil {
 		return nil, err
 	}
-	resp.Message = fmt.Sprintf("retored backup ok from: %s", restore.UploadedFile)
+	resp.Message = fmt.Sprintf("retored backup sucessfully from: %s", restore.UploadedFile)
 	return resp, nil
 }
 
-// Upload upload a build
-func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDirName, checkDirName, appVersion string) (*UploadResponse, error) {
-	// make the dirs
-	var err error
+func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDirName, checkDirName string) (*UploadResponse, error) {
 	if destination == "" {
 		return nil, errors.New("destination can not be empty")
 	}
 	if deleteDirName == "" {
-		return nil, errors.New("destination can not be empty")
+		return nil, errors.New("delete_dir_name can not be empty")
 	}
 	log.Infof("restore backup delete exiting dir to destination dir: %s", deleteDirName)
-	var tmpDir string
-	if tmpDir, err = inst.MakeBackupTmpDirUpload(); err != nil {
+	tmpDir, err := inst.MakeBackupTmpDirUpload()
+	if err != nil {
 		return nil, err
 	}
-	// save app in tmp dir
 	zipSource, err := inst.SaveUploadedFile(file, tmpDir)
 	if err != nil {
 		return nil, err
@@ -125,23 +106,11 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 			return nil, errors.New(fmt.Sprintf("no mathcing path name in the uploaded zip folder equal to: %s", checkDirName))
 		}
 	}
-	if appVersion != "" {
-		parts := strings.Split(zipSource, "/")
-		for _, part := range parts {
-			fmt.Println(strings.Contains(part, ".zip"), part)
-			if strings.Contains(part, ".zip") {
-
-			}
-		}
-
-		fmt.Println(parts)
-	}
-	err = inst.RmRF(deleteDirName)
+	err = fileutils.RmRF(deleteDirName)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("restore backup unzip backup from source: %s", zipSource)
-	log.Infof("restore backup unzip backup to destination dir: %s", destination)
+	log.Infof("restore backup unzip backup from source: %s to destination dir: %s", zipSource, destination)
 	err = unzip(zipSource, destination)
 	if err != nil {
 		log.Errorf("restore backup unzip backup to dir: %s err: %s", destination, err.Error())
@@ -150,202 +119,128 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 	return &UploadResponse{
 		FileName:     file.Filename,
 		UploadedFile: zipSource,
-	}, err
+	}, nil
 }
 
-/*
-LIST BACK-UPS
-*/
+// -------------
+// LIST BACK-UPS
+// -------------
 
 // ListFullBackups list all the backups taken for the data dir /data
-func (inst *App) ListFullBackups() ([]ListBackups, error) {
-	path, err := inst.generateHomeFullBackupFolderName()
-	if err != nil {
-		return nil, err
-	}
-	return inst.listFilesAndPath(path)
+func (inst *App) ListFullBackups() ([]string, error) {
+	fullBackupDir := inst.getFullBackupDir()
+	return fileutils.ListFiles(fullBackupDir)
 }
 
-// ListAppBackupsDirs list all the folder for each app
-func (inst *App) ListAppBackupsDirs() ([]string, error) {
-	path, err := inst.generateAppHomeBackupsFolderName()
-	if err != nil {
-		return nil, err
-	}
-	return inst.listFiles(path)
+// ListAppsBackups list all the folder for each app
+func (inst *App) ListAppsBackups() ([]string, error) {
+	appsBackupDir := inst.getAppsBackupDir()
+	return fileutils.ListFiles(appsBackupDir)
 }
 
-// ListBackupsByApp list all the backups taken for each app
-func (inst *App) ListBackupsByApp(appName string) ([]ListBackups, error) {
+// ListAppBackups list all the backups taken for each app
+func (inst *App) ListAppBackups(appName string) ([]string, error) {
 	if appName == "" {
-		return nil, errors.New("app name can not be empty")
+		return nil, errors.New(ErrEmptyAppName)
 	}
-	path, err := inst.generateAppHomeBackupFolderName(appName)
-	if err != nil {
-		return nil, err
-	}
-	apps, err := inst.listFilesAndPath(path)
-	return apps, err
+	appBackupDir := inst.getAppBackupDir(appName)
+	return fileutils.ListFiles(appBackupDir)
 }
 
-type ListBackups struct {
-	Path        string `json:"path"`
-	BackupName  string `json:"name,omitempty"`
-	PathAndName string `json:"path_and_name,omitempty"`
-	Message     string `json:"message,omitempty"`
-}
+// ---------------
+// DELETE BACK-UPS
+// ---------------
 
-func (inst *App) listFilesAndPath(path string) ([]ListBackups, error) {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-	var dirContents []ListBackups
-	var dirContent ListBackups
-	dirContent.Path = path
-	if fileInfo.IsDir() {
-		files, err := ioutil.ReadDir(path)
-		if len(files) == 0 {
-			dirContent.Message = "no apps found"
-			dirContents = append(dirContents, dirContent)
-		}
-		if err != nil {
-			return nil, err
-		}
-		for _, file := range files {
-			dirContent.BackupName = file.Name()
-			dirContent.PathAndName = fmt.Sprintf("%s/%s", path, file.Name())
-			dirContents = append(dirContents, dirContent)
-		}
-	}
-	return dirContents, nil
-}
-
-/*
-DELETE BACK-UPS
-*/
-
-// DeleteAllFullBackups will delete a full backup of the data dir /data
+// DeleteAllFullBackups will delete a full backup of the data dir ~/backup/full
 func (inst *App) DeleteAllFullBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
-	path, err := inst.generateHomeFullBackupFolderName()
+	fullBackupDir := inst.getFullBackupDir()
+	err := fileutils.RmRF(fullBackupDir)
 	if err != nil {
-		resp.Message = "failed to find backup path"
+		resp.Message = fmt.Sprintf("failed to delete: %s", fullBackupDir)
 		return resp, err
 	}
-	// err = inst.RmRF(path)
-	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete: %s", path)
-		return resp, err
-	}
-	resp.Message = fmt.Sprintf("deleted ok: %s", path)
+	resp.Message = fmt.Sprintf("deleted successfully: %s", fullBackupDir)
 	return resp, nil
 }
 
-// DeleteAllAppBackups delete all the app backups /user/home/backup/apps
-func (inst *App) DeleteAllAppBackups() (*MessageResponse, error) {
+// DeleteAllAppsBackups delete all the app backups ~/backups/apps
+func (inst *App) DeleteAllAppsBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
-	path, err := inst.generateAppHomeBackupsFolderName()
+	appsBackupDir := inst.getAppsBackupDir()
+	err := fileutils.RmRF(appsBackupDir)
 	if err != nil {
-		resp.Message = "failed to find backup path"
+		resp.Message = fmt.Sprintf("failed to delete: %s", appsBackupDir)
 		return resp, err
 	}
-	err = inst.RmRF(path)
-	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete: %s", path)
-		return resp, err
-	}
-	resp.Message = fmt.Sprintf("deleted ok: %s", path)
+	resp.Message = fmt.Sprintf("deleted succefully: %s", appsBackupDir)
 	return resp, nil
 }
 
-// DeleteAppAllBackUpByName delete all apps backup, eg /data/backups/apps/flow-framework
-func (inst *App) DeleteAppAllBackUpByName(appName string) (*MessageResponse, error) {
+// DeleteAllAppBackups delete all apps backup, eg ~/backups/apps/flow-framework
+func (inst *App) DeleteAllAppBackups(appName string) (*MessageResponse, error) {
 	resp := &MessageResponse{}
-	path, err := inst.generateAppHomeBackupsFolderName()
+	appBackupDir := inst.getAppBackupDir(appName)
+	err := fileutils.RmRF(appBackupDir)
 	if err != nil {
-		resp.Message = "failed to find backup path"
+		resp.Message = fmt.Sprintf("failed to delete: %s", appBackupDir)
 		return resp, err
 	}
-	path = fmt.Sprintf("%s/%s", path, appName)
-	err = inst.RmRF(path)
-	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete: %s", path)
-		return resp, err
-	}
-	resp.Message = fmt.Sprintf("deleted ok: %s", path)
+	resp.Message = fmt.Sprintf("deleted successfully: %s", appBackupDir)
 	return resp, nil
 }
 
-// DeleteAppOneBackUpByName delete an app backup, eg /data/backups/apps/flow-framework/appName-version-2022-07-31 12:02:01
-func (inst *App) DeleteAppOneBackUpByName(appName, backupFolder string) (*MessageResponse, error) {
+// DeleteOneAppBackup delete an app backup, eg ~/backups/apps/flow-framework/flow-framework-v0.0.1-2022-07-31T12:02:01
+func (inst *App) DeleteOneAppBackup(appName, zipFile string) (*MessageResponse, error) {
 	resp := &MessageResponse{}
-	path, err := inst.generateAppHomeBackupsFolderName()
+	appBackupWithBackupFolderDir := inst.getAppBackupWithZipFile(appName, zipFile)
+	err := fileutils.Rm(appBackupWithBackupFolderDir)
 	if err != nil {
-		resp.Message = "failed to find backup path"
+		resp.Message = fmt.Sprintf("failed to delete: %s", appBackupWithBackupFolderDir)
 		return resp, err
 	}
-	path = fmt.Sprintf("%s/%s/%s", path, appName, backupFolder)
-	err = inst.Rm(path)
-	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete: %s", path)
-		return resp, err
-	}
-	resp.Message = fmt.Sprintf("deleted ok: %s", path)
+	resp.Message = fmt.Sprintf("deleted successfully: %s", appBackupWithBackupFolderDir)
 	return resp, nil
 }
 
 // WipeBackups delete all the backups
 func (inst *App) WipeBackups() (*MessageResponse, error) {
 	resp := &MessageResponse{}
-	path, err := inst.backUpHome()
+	backupDir := inst.getBackupDir()
+	err := fileutils.RmRF(backupDir)
 	if err != nil {
-		resp.Message = "failed to find backup path"
+		resp.Message = fmt.Sprintf("failed to delete: %s", backupDir)
 		return resp, err
 	}
-	err = inst.RmRF(path)
-	if err != nil {
-		resp.Message = fmt.Sprintf("failed to delete: %s", path)
-		return resp, err
-	}
-	resp.Message = fmt.Sprintf("deleted ok: %s", path)
+	resp.Message = fmt.Sprintf("deleted successfully: %s", backupDir)
 	return resp, nil
 }
 
-/*
-RUN A BACK-UP
-*/
+// -------------
+// RUN A BACK-UP
+// -------------
 
-// FullBackUp make a backup of the whole edge device from the /data
-func (inst *App) FullBackUp(deiceName ...string) (string, error) {
-	found := inst.DirExists(inst.DataDir)
+// FullBackUp make a backup of the whole edge device from the DataDir, i.e. /data by default
+func (inst *App) FullBackUp(deviceName *string) (string, error) {
+	found := fileutils.DirExists(inst.DataDir)
 	if !found {
-		return "", errors.New("failed to find /data")
+		return "", errors.New(fmt.Sprintf("failed to find %s", inst.DataDir))
 	}
-	source := inst.DataDir
-	path, err := inst.generateHomeFullBackupFolderName()
+	fullBackupDir := inst.getFullBackupDir()
+	err := os.MkdirAll(fullBackupDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		return "", err
 	}
-	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FilePerm))
-	if err != nil {
-		return "", err
-	}
-	zipName := fmt.Sprintf("%s/full-backup-%s.zip", path, timestamp())
-	if len(deiceName) > 0 {
-		if deiceName[0] != "" {
-			zipName = fmt.Sprintf("%s/%s-full-backup-%s.zip", path, deiceName[0], timestamp())
-		}
-	}
-	return zipName, fileutils.RecursiveZip(source, zipName)
+	zipFile := inst.generateFullBackupZipFile(deviceName)
+	return zipFile, fileutils.RecursiveZip(inst.DataDir, zipFile)
 }
 
-// BackupApp backup an app /data/backups/apps/appName/appName-version-2022-07-31 12:02:01
-func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) {
+// BackupApp backup an app ~/apps/appName/appName-version-2022-07-31T12:02:01
+func (inst *App) BackupApp(appName string, deviceName *string) (string, error) {
 	if appName == "" {
-		return "", errors.New("app name can not be empty")
+		return "", errors.New(ErrEmptyAppName)
 	}
-	found := inst.ConfirmAppDir(appName)
+	found := fileutils.DirExists(inst.GetAppDataPath(appName))
 	if !found {
 		return "", errors.New(fmt.Sprintf("failed to find app: %s", appName))
 	}
@@ -353,57 +248,61 @@ func (inst *App) BackupApp(appName string, deiceName ...string) (string, error) 
 	if version == "" {
 		return "", errors.New("failed to find app version")
 	}
-	source := fmt.Sprintf("%s/%s", inst.DataDir, appName)
-	path, err := inst.generateAppHomeBackupFolderName(appName)
+	source := inst.GetAppDataPath(appName)
+	appBackupDir := inst.getAppBackupDir(appName)
+	err := os.MkdirAll(appBackupDir, os.FileMode(inst.FileMode))
 	if err != nil {
 		return "", err
 	}
-	err = inst.MakeDirectoryIfNotExists(path, os.FileMode(inst.FilePerm))
-	if err != nil {
-		return "", err
+	zipFile := inst.generateAppBackupZipFile(appName, version, deviceName)
+	return zipFile, fileutils.RecursiveZip(source, zipFile)
+}
+
+// getBackupDir backup home dir ~/backup
+func (inst *App) getBackupDir() string {
+	return inst.BackupsDir
+}
+
+// getFullBackupDir backup an app  ~/backup/full
+func (inst *App) getFullBackupDir() string {
+	home := inst.getBackupDir()
+	return path.Join(home, "full")
+}
+
+// getAppsBackupDir backup home dir ~/backup/apps
+func (inst *App) getAppsBackupDir() string {
+	home := inst.getBackupDir()
+	return path.Join(home, "apps")
+}
+
+// getAppBackupDir backup an app  ~/backup/apps/flow-framework
+func (inst *App) getAppBackupDir(appName string) string {
+	appsBackupDir := inst.getAppsBackupDir()
+	return path.Join(appsBackupDir, appName)
+}
+
+// getAppBackupWithZipFile backup an app  ~/backup/apps/flow-framework/flow-framework-v0.0.1-2022-07-31T12:02:01.zip
+func (inst *App) getAppBackupWithZipFile(appName, zipFile string) string {
+	appBackupDir := inst.getAppBackupDir(appName)
+	return path.Join(appBackupDir, zipFile)
+}
+
+func (inst *App) generateFullBackupZipFile(deviceName *string) string {
+	zipFileName := ""
+	if deviceName == nil {
+		zipFileName = fmt.Sprintf("full-backup-%s.zip", timestamp())
+	} else {
+		zipFileName = fmt.Sprintf("%s-full-backup-%s.zip", *deviceName, timestamp())
 	}
-	zipName := fmt.Sprintf("%s/backup-%s-%s-%s.zip", path, appName, version, timestamp())
-	if len(deiceName) > 0 {
-		if deiceName[0] != "" {
-			zipName = fmt.Sprintf("%s/%s-backup-%s-%s-%s.zip", path, deiceName[0], appName, version, timestamp())
-		}
+	return path.Join(inst.getFullBackupDir(), zipFileName)
+}
+
+func (inst *App) generateAppBackupZipFile(appName, version string, deviceName *string) string {
+	zipFileName := ""
+	if deviceName == nil {
+		zipFileName = fmt.Sprintf("backup-%s-%s-%s.zip", appName, version, timestamp())
+	} else {
+		zipFileName = fmt.Sprintf("%s-backup-%s-%s-%s.zip", *deviceName, appName, version, timestamp())
 	}
-	return zipName, fileutils.RecursiveZip(source, zipName)
-}
-
-// MakeBackupTmpDirUpload  => /user/home/backup/tmp/tmp_dir_name
-func (inst *App) MakeBackupTmpDirUpload() (string, error) {
-	home, err := inst.backUpHome()
-	if err != nil {
-		return "", err
-	}
-	tmpDir := fmt.Sprintf("%s/tmp/%s", home, uuid.ShortUUID("tmp"))
-	err = makeDirectoryIfNotExists(tmpDir, os.FileMode(inst.FilePerm))
-	return tmpDir, err
-}
-
-// backUpHome backup home dir /user/home/backup
-func (inst *App) backUpHome() (string, error) {
-	return inst.BackupsDir, nil
-}
-
-// backUpHome backup home dir /user/home/backup/apps
-func (inst *App) generateAppHomeBackupsFolderName() (string, error) {
-	home, err := inst.backUpHome()
-	path := fmt.Sprintf("%s/apps", home)
-	return path, err
-}
-
-// generateHomeFullBackupFolderName backup an app  /user/home/backup/full/
-func (inst *App) generateHomeFullBackupFolderName() (string, error) {
-	home, err := inst.backUpHome()
-	path := fmt.Sprintf("%s/full", home)
-	return path, err
-}
-
-// generateAppHomeBackupFolderName backup an app  /user/home/backup/flow-framework/v0.0.1
-func (inst *App) generateAppHomeBackupFolderName(appName string) (string, error) {
-	home, err := inst.generateAppHomeBackupsFolderName()
-	path := fmt.Sprintf("%s/%s", home, appName)
-	return path, err
+	return path.Join(inst.getAppBackupDir(appName), zipFileName)
 }

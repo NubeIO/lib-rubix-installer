@@ -4,75 +4,51 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
 type BuildDetails struct {
-	MatchedName    string `json:"name,omitempty"`
-	MatchedVersion string `json:"version,omitempty"`
-	MatchedArch    string `json:"arch,omitempty"`
-	ZipName        string `json:"zip_name,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Version string `json:"version,omitempty"`
+	Arch    string `json:"arch,omitempty"`
+	ZipName string `json:"zip_name,omitempty"`
+}
+
+type FileDetails struct {
+	Name      string `json:"name"`
+	Extension string `json:"extension"`
+	IsDir     bool   `json:"is_dir"`
 }
 
 func (inst *App) GetZipBuildDetails(zipName string) *BuildDetails {
 	parts := strings.Split(zipName, "-")
-	count := 0
-	name := ""
-	version := ""
-	arch := ""
-	for i, part := range parts { // match version
-		p := strings.Split(part, ".")
-		// if len is 3 eg, 0.0.1
-		isNum := 0
-		if len(p) == 3 || len(p) == 4 {
-			// check if they are numbers
-			for _, s := range p {
-				if _, err := strconv.Atoi(s); err == nil {
-					isNum++
-				}
-			}
-			if isNum == 3 {
-				count = i
-				version = part
-				version = strings.Trim(version, ".zip")
-			}
-			for _, s := range p { // match arch
-				if s == "amd64" {
-					arch = "amd64"
-				}
-				if s == "armv7" {
-					arch = "armv7"
-				}
-			}
+	if len(parts) > 2 {
+		version := parts[len(parts)-2]
+		if !strings.Contains(version, "v") {
+			version = fmt.Sprintf("v%s", version)
 		}
-	}
-	name = strings.Join(parts[0:count], "-")
-
-	if (len(zipName) >= 1) && (len(zipName) <= 7) { // this logic is here as some apps like wires dont have the name of the app in the zip name (eg FF is like :flow-framework-0.6.1-6cfec278.amd64.zip & wires is :v2.0.5)
-		p := strings.Split(zipName, ".")
-		if len(p) > 2 {
-			nameAsVersion := p[0]
-			if strings.Contains(nameAsVersion, "v") {
-				if !strings.Contains(nameAsVersion, ".zip") {
-					version = zipName // make the zip name the version
-				}
-			}
+		archContent := parts[len(parts)-1]
+		archParts := strings.Split(archContent, ".")
+		arch := ""
+		if len(parts) > 1 {
+			arch = archParts[1]
 		}
-	}
-	if !strings.Contains(version, "v") {
-		version = fmt.Sprintf("v%s", version)
+		nameParts := parts[:len(parts)-2]
+		name := strings.Join(nameParts, "-")
+		return &BuildDetails{
+			Name:    name,
+			Version: version,
+			Arch:    arch,
+			ZipName: zipName,
+		}
 	}
 	return &BuildDetails{
-		MatchedName:    name,
-		MatchedVersion: version,
-		MatchedArch:    arch,
-		ZipName:        zipName,
+		ZipName: zipName,
 	}
 }
 
-// GetBuildZipNameByArch // get a build by its arch
-func (inst *App) GetBuildZipNameByArch(path, arch string, dontCheckArch bool) (*BuildDetails, error) {
+// GetBuildZipNameByArch get a build by its arch
+func (inst *App) GetBuildZipNameByArch(path, arch string, doNotValidateArch bool) (*BuildDetails, error) {
 	var out *BuildDetails
 	details, err := getFileDetails(path)
 	if err != nil {
@@ -80,17 +56,17 @@ func (inst *App) GetBuildZipNameByArch(path, arch string, dontCheckArch bool) (*
 	}
 	for _, name := range details {
 		app := inst.GetZipBuildDetails(name.Name)
-		if app.MatchedArch == arch {
+		if app.Arch == arch {
 			out = app
 		}
-		if dontCheckArch { // most likely rubix-wires as it has no arch
+		if doNotValidateArch { // most likely rubix-wires as it has no arch
 			out = app
 		}
 	}
 	return out, nil
 }
 
-// GetBuildZipNames // get all the builds zips from a path
+// GetBuildZipNames get all the builds zips from a path
 func (inst *App) GetBuildZipNames(path string) ([]BuildDetails, error) {
 	var out []BuildDetails
 	details, err := getFileDetails(path)
@@ -104,19 +80,13 @@ func (inst *App) GetBuildZipNames(path string) ([]BuildDetails, error) {
 	return out, nil
 }
 
-type fileDetails struct {
-	Name      string `json:"name"`
-	Extension string `json:"extension"`
-	IsDir     bool   `json:"is_dir"`
-}
-
-func getFileDetails(dir string) ([]fileDetails, error) {
+func getFileDetails(dir string) ([]FileDetails, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
-	var out []fileDetails
-	var f fileDetails
+	var out []FileDetails
+	var f FileDetails
 	for _, file := range files {
 		var extension = filepath.Ext(file.Name())
 		f.Extension = extension

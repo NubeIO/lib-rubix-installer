@@ -8,15 +8,19 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"path"
 	"path/filepath"
 )
 
 type Upload struct {
-	Name    string                `json:"name"`
-	Version string                `json:"version"`
-	Product string                `json:"product"`
-	Arch    string                `json:"arch"`
-	File    *multipart.FileHeader `json:"file"`
+	Name                            string                `json:"name"`
+	Version                         string                `json:"version"`
+	Product                         string                `json:"product"`
+	Arch                            string                `json:"arch"`
+	DoNotValidateArch               bool                  `json:"do_not_validate_arch"`
+	MoveExtractedFileToNameApp      bool                  `json:"move_extracted_file_to_name_app"`
+	MoveOneLevelInsideFileToOutside bool                  `json:"move_one_level_inside_file_to_outside"`
+	File                            *multipart.FileHeader `json:"file"`
 }
 
 type UploadResponse struct {
@@ -26,89 +30,70 @@ type UploadResponse struct {
 }
 
 func (inst *App) CompareBuildToArch(buildZipName, productType string) error {
-	check := inst.GetZipBuildDetails(buildZipName)
-	productInfo, err := inst.GetProduct() // same api as 0.0.0.0:1661/api/system/product check the arch type
+	zipBuildInfo := inst.GetZipBuildDetails(buildZipName)
+	productInfo, err := inst.GetProduct() // same api as 0.0.0.0:1661/api/system/product zipBuildInfo the arch type
 	if err != nil {
 		log.Errorf("upload build get product type err: %s", err.Error())
 		return err
 	}
-	if check.MatchedArch != productInfo.Arch {
-		errMsg := fmt.Sprintf("upload build incorrect arch type was uploaded build arch: %s host arch: %s", check.MatchedArch, productInfo.Arch)
+	if zipBuildInfo.Arch != productInfo.Arch {
+		errMsg := fmt.Sprintf("upload build incorrect arch type, was uploaded build arch: %s & host arch: %s", zipBuildInfo.Arch, productInfo.Arch)
 		log.Errorf(errMsg)
 		return errors.New(errMsg)
 	}
 	if productType != productInfo.Product {
-		errMsg := fmt.Sprintf("upload build incorrect product type was uploaded build arch: %s host product: %s", productType, productInfo.Product)
+		errMsg := fmt.Sprintf("upload build incorrect product type, was uploaded build arch: %s & host product: %s", productType, productInfo.Product)
 		log.Errorf(errMsg)
 		return errors.New(errMsg)
 	}
 	return nil
 }
 
-func (inst *App) AddUploadEdgeApp(app *Upload) (*AppResponse, error) {
-	var file = app.File
-	var appName = app.Name
-	var version = app.Version
-	var archType = app.Arch
-	var productType = app.Product
-	if appName == "" {
-		return nil, errors.New("app name can not be empty")
+func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
+	if app.Name == "" {
+		return nil, errors.New(ErrEmptyAppName)
 	}
-	if version == "" {
-		return nil, errors.New("app version can not be empty")
+	if app.Version == "" {
+		return nil, errors.New(ErrEmptyAppVersion)
 	}
-	if archType == "" {
+	if app.Arch == "" {
 		return nil, errors.New("arch type can not be empty, try armv7 amd64")
 	}
-	if productType == "" {
+	if app.Product == "" {
 		return nil, errors.New("product type can not be empty, try RubixCompute, RubixComputeIO, RubixCompute5, Server, Edge28, Nuc")
 	}
-	if app.Name == "rubix-wires" { // wires don't care about the arch
-	} else {
-		err := inst.CompareBuildToArch(file.Filename, productType)
+	if !app.DoNotValidateArch { // wires don't care about the arch
+		err := inst.CompareBuildToArch(app.File.Filename, app.Product)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("upload edge app check arch err: %s", err.Error()))
+			return nil, err
 		}
 	}
-	resp, err := inst.Upload(file) // save app in tmp dir
+	resp, err := inst.Upload(app.File) // save app in tmp dir
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("upload edge app unzip err: %s", err.Error()))
 	}
-	serviceFile, err := inst.GetNubeServiceFileName(appName)
+	serviceName := inst.GetServiceNameFromAppName(app.Name)
+	err = inst.SystemCtl.Stop(serviceName) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
 	if err != nil {
-		serviceFile = fmt.Sprintf("nubeio-%s.service", appName)
+		log.Infof("was able to stop service: %s", serviceName)
 	}
-	log.Infof("try and stop service: %s", serviceFile)
-	action, err := inst.Ctl.CtlAction("stop", serviceFile) // try and stop the app as when updating and trying to delete the existing instance linux can throw and error saying `file is busy`
-	if action != nil {
-		if action.Ok {
-			log.Infof("failed to stop service: %s", serviceFile)
-		} else {
-			log.Infof("was able to stop service: %s", serviceFile)
-		}
-	} else {
-		log.Infof("was able to stop service: %s", serviceFile)
-	}
-	installApp, err := inst.InstallEdgeApp(&Install{
-		Name:    app.Name,
-		Version: app.Version,
-		Source:  resp.UploadedFile,
+	response, err := inst.InstallEdgeApp(&Install{
+		Name:                            app.Name,
+		Version:                         app.Version,
+		Source:                          resp.UploadedFile,
+		MoveExtractedFileToNameApp:      app.MoveExtractedFileToNameApp,
+		MoveOneLevelInsideFileToOutside: app.MoveOneLevelInsideFileToOutside,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return installApp, nil
+	return response, err
 }
 
 // Upload upload a build
 func (inst *App) Upload(zip *multipart.FileHeader) (*UploadResponse, error) {
-	// make the dirs
-	var err error
 	if err := inst.MakeTmpDir(); err != nil {
 		return nil, err
 	}
-	var tmpDir string
-	if tmpDir, err = inst.MakeTmpDirUpload(); err != nil {
+	tmpDir, err := inst.MakeTmpDirUpload()
+	if err != nil {
 		return nil, err
 	}
 	log.Infof("upload build to tmp dir: %s", tmpDir)
@@ -120,7 +105,7 @@ func (inst *App) Upload(zip *multipart.FileHeader) (*UploadResponse, error) {
 		FileName:     zip.Filename,
 		TmpFile:      tmpDir,
 		UploadedFile: zipSource,
-	}, err
+	}, nil
 }
 
 func (inst *App) UploadServiceFile(app *Upload) (*UploadResponse, error) {
@@ -130,9 +115,7 @@ func (inst *App) UploadServiceFile(app *Upload) (*UploadResponse, error) {
 	return inst.uploadServiceFile(appName, version, file)
 }
 
-// uploadApp
 func (inst *App) uploadServiceFile(appName, version string, file *multipart.FileHeader) (*UploadResponse, error) {
-	// make the dirs
 	var err error
 	if filepath.Ext(file.Filename) != ".service" {
 		return nil, errors.New(fmt.Sprintf("service file provided: %s, did not have correct file extension must be (.service)", file.Filename))
@@ -157,29 +140,26 @@ func (inst *App) uploadServiceFile(appName, version string, file *multipart.File
 	}, err
 }
 
-func (inst *App) unZip(source, destination string) ([]string, error) {
-	source = filePath(source)
-	destination = filePath(destination)
-	return fileutils.UnZip(source, destination, os.FileMode(inst.FilePerm))
+func (inst *App) unzip(source, destination string) ([]string, error) {
+	return fileutils.UnZip(source, destination, os.FileMode(inst.FileMode))
 }
 
 // SaveUploadedFile uploads the form file to specific dst.
 // combination's of file name and the destination and will save file as: /data/my-file
 // returns the filename and path as a string and any error
-func (inst *App) SaveUploadedFile(file *multipart.FileHeader, dest string) (destination string, err error) {
-	destination = fmt.Sprintf("%s/%s", dest, file.Filename)
-	fmt.Println("SaveUploadedFile dest", destination)
-	destination = filePath(destination)
+func (inst *App) SaveUploadedFile(file *multipart.FileHeader, destination string) (uploadedFile string, err error) {
+	uploadedFile = path.Join(destination, file.Filename)
+	fmt.Println("SaveUploadedFile destination", uploadedFile)
 	src, err := file.Open()
 	if err != nil {
-		return destination, err
+		return uploadedFile, err
 	}
 	defer src.Close()
-	out, err := os.Create(destination)
+	out, err := os.Create(uploadedFile)
 	if err != nil {
-		return destination, err
+		return uploadedFile, err
 	}
 	defer out.Close()
 	_, err = io.Copy(out, src)
-	return destination, err
+	return uploadedFile, err
 }
