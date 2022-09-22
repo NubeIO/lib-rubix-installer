@@ -12,11 +12,12 @@ import (
 )
 
 type Install struct {
-	Name                  string `json:"name"`
-	Version               string `json:"version"`
-	Source                string `json:"source"`
-	DoNothingOnExtraction bool   `json:"do_nothing_on_extraction"`
-	DeleteAppDataDir      bool   `json:"delete_app_data_dir"` // this will delete for example the db, plugins and config
+	Name                            string `json:"name"`
+	Version                         string `json:"version"`
+	Source                          string `json:"source"`
+	MoveExtractedFileToNameApp      bool   `json:"move_extracted_file_to_name_app"`
+	MoveOneLevelInsideFileToOutside bool   `json:"move_one_level_inside_file_to_outside"`
+	DeleteAppDataDir                bool   `json:"delete_app_data_dir"` // this will delete for example the db, plugins and config
 }
 
 type Response struct {
@@ -58,24 +59,32 @@ func (inst *App) InstallEdgeApp(app *Install) (*AppResponse, error) {
 		return nil, errors.New(fmt.Sprintf("install edge app unzip err: %s", err.Error()))
 	}
 	// rename the extracted file into app, it's only for those apps which is not frontend and executable
-	if !app.DoNothingOnExtraction {
-		files, err := inst.listFiles(destination)
+	if app.MoveExtractedFileToNameApp {
+		files, err := fileutils.ListFiles(destination)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("install edge app list files err: %s", err.Error()))
 		}
 		if len(files) > 0 {
-			for _, file := range files {
-				existingFile := path.Join(destination, file)
-				newFile := path.Join(destination, "app")
-				log.Infof("Existing file: %s renaming into: %s", existingFile, newFile)
-				if knownBuildNames(file) {
-					err = fileutils.MoveFile(existingFile, newFile) // rename the build
-					if err != nil {
-						return nil, errors.New(fmt.Sprintf("install edge app rename file err: %s", err.Error()))
-					}
-					os.Chmod(newFile, os.FileMode(inst.FileMode))
+			existingFile := path.Join(destination, files[0])
+			newFile := path.Join(destination, "app")
+			log.Infof("Existing file: %s renaming into: %s", existingFile, newFile)
+			if knownBuildNames(files[0]) {
+				err = fileutils.MoveFile(existingFile, newFile) // rename the build
+				if err != nil {
+					return nil, errors.New(fmt.Sprintf("install edge app rename file err: %s", err.Error()))
+				}
+				err = os.Chmod(newFile, os.FileMode(inst.FileMode))
+				if err != nil {
+					return nil, errors.New(fmt.Sprintf("install edge app giving permission err: %s", err.Error()))
 				}
 			}
+		}
+	}
+
+	if app.MoveOneLevelInsideFileToOutside {
+		err = MoveOneLevelInsideFileToOutside(destination)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("install edge app move one level inside file to outside: %s", err.Error()))
 		}
 	}
 

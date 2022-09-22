@@ -99,7 +99,7 @@ func (inst *App) MakeInstallDir() error {
 
 // MakeAppInstallDir  => /data/rubix-service/apps/install/wires-builds
 func (inst *App) MakeAppInstallDir(appName string, removeExisting ...bool) error {
-	if appName != "" {
+	if appName == "" {
 		return errors.New(ErrEmptyAppName)
 	}
 	appInstallDir := inst.GetAppInstallPath(appName)
@@ -116,7 +116,7 @@ func (inst *App) MakeAppInstallDir(appName string, removeExisting ...bool) error
 
 // MakeAppVersionDir  => /data/rubix-service/apps/install/wires-builds/v0.0.1
 func (inst *App) MakeAppVersionDir(appName, version string) error {
-	if appName != "" {
+	if appName == "" {
 		return errors.New(ErrEmptyAppName)
 	}
 	if err := CheckVersion(version); err != nil {
@@ -128,7 +128,7 @@ func (inst *App) MakeAppVersionDir(appName, version string) error {
 
 // MakeAppDataDir  => /data/flow-framework
 func (inst *App) MakeAppDataDir(appName string) error {
-	if appName != "" {
+	if appName == "" {
 		return errors.New(ErrEmptyAppName)
 	}
 	dataPath := inst.GetAppDataPath(appName)

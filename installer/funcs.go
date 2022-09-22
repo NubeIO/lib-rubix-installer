@@ -3,32 +3,16 @@ package installer
 import (
 	"archive/zip"
 	"fmt"
+	"github.com/NubeIO/lib-files/fileutils"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 )
-
-func (inst *App) listFiles(file string) ([]string, error) {
-	fileInfo, err := os.Stat(file)
-	if err != nil {
-		return nil, err
-	}
-	var dirContent []string
-	if fileInfo.IsDir() {
-		files, err := ioutil.ReadDir(file)
-		if err != nil {
-			return nil, err
-		}
-		for _, file := range files {
-			dirContent = append(dirContent, file.Name())
-		}
-	}
-	return dirContent, nil
-}
 
 func timestamp() string {
 	t := time.Now().Format("2006-01-02T15:04:05")
@@ -105,6 +89,35 @@ func extractZipFile(f *zip.File, destination string) error {
 		_, err = io.Copy(f, rc)
 		if err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func MoveOneLevelInsideFileToOutside(file string) error {
+	fileInfo, err := os.Stat(file)
+	if err != nil {
+		return err
+	}
+	if fileInfo.IsDir() {
+		files, err := ioutil.ReadDir(file)
+		if err != nil {
+			return err
+		}
+		for _, f := range files {
+			if f.IsDir() {
+				source := path.Join(file, f.Name())
+				destination := file
+				// risk to copy if we have same folder inside as its current folder name
+				err = fileutils.Copy(source, destination)
+				if err != nil {
+					return err
+				}
+				err = os.RemoveAll(source)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil

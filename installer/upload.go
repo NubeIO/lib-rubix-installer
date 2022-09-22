@@ -13,12 +13,14 @@ import (
 )
 
 type Upload struct {
-	Name              string                `json:"name"`
-	Version           string                `json:"version"`
-	Product           string                `json:"product"`
-	Arch              string                `json:"arch"`
-	DoNotValidateArch bool                  `json:"do_not_validate_arch"`
-	File              *multipart.FileHeader `json:"file"`
+	Name                            string                `json:"name"`
+	Version                         string                `json:"version"`
+	Product                         string                `json:"product"`
+	Arch                            string                `json:"arch"`
+	DoNotValidateArch               bool                  `json:"do_not_validate_arch"`
+	MoveExtractedFileToNameApp      bool                  `json:"move_extracted_file_to_name_app"`
+	MoveOneLevelInsideFileToOutside bool                  `json:"move_one_level_inside_file_to_outside"`
+	File                            *multipart.FileHeader `json:"file"`
 }
 
 type UploadResponse struct {
@@ -76,9 +78,11 @@ func (inst *App) UploadEdgeApp(app *Upload) (*AppResponse, error) {
 		log.Infof("was able to stop service: %s", serviceName)
 	}
 	response, err := inst.InstallEdgeApp(&Install{
-		Name:    app.Name,
-		Version: app.Version,
-		Source:  resp.UploadedFile,
+		Name:                            app.Name,
+		Version:                         app.Version,
+		Source:                          resp.UploadedFile,
+		MoveExtractedFileToNameApp:      app.MoveExtractedFileToNameApp,
+		MoveOneLevelInsideFileToOutside: app.MoveOneLevelInsideFileToOutside,
 	})
 	return response, err
 }

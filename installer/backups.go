@@ -129,13 +129,13 @@ func (inst *App) restoreBackup(file *multipart.FileHeader, destination, deleteDi
 // ListFullBackups list all the backups taken for the data dir /data
 func (inst *App) ListFullBackups() ([]string, error) {
 	fullBackupDir := inst.getFullBackupDir()
-	return inst.listFiles(fullBackupDir)
+	return fileutils.ListFiles(fullBackupDir)
 }
 
 // ListAppsBackups list all the folder for each app
 func (inst *App) ListAppsBackups() ([]string, error) {
 	appsBackupDir := inst.getAppsBackupDir()
-	return inst.listFiles(appsBackupDir)
+	return fileutils.ListFiles(appsBackupDir)
 }
 
 // ListAppBackups list all the backups taken for each app
@@ -144,7 +144,7 @@ func (inst *App) ListAppBackups(appName string) ([]string, error) {
 		return nil, errors.New(ErrEmptyAppName)
 	}
 	appBackupDir := inst.getAppBackupDir(appName)
-	return inst.listFiles(appBackupDir)
+	return fileutils.ListFiles(appBackupDir)
 }
 
 // ---------------
